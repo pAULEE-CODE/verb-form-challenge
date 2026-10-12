@@ -25,6 +25,10 @@ python3 scripts/build_standalone_challenge.py
 
 This keeps the downloadable HTML in sync with the same source used by the web build.
 
+## Build rules
+
+See [BUILD_MODES.md](BUILD_MODES.md) for the three test versions and the rules for keeping their data and spelling logic aligned.
+
 ## Project layout
 
 - `shared-assets/verb-bank.js` — canonical verb data shared by the static game builds.
