@@ -55,6 +55,12 @@ Keep each game's content and rules separate. A shared resource can wait until a 
 
 - On the results screen, **New game** should return to the player-count selection menu. This lets the next group choose a different number of players without navigating back through the current flow.
 
+## Requested Challenge difficulty choice
+
+- Before a Challenge round, ask players to choose the number of answer choices: 3, 4, 5, 6, 7, or 8. This setting applies to Challenge only.
+- Present each level with a clear word label and button colour; settle the exact names and palette during interface design.
+- If challenge results are collected later, record the selected choice count with the session so scores can be interpreted fairly.
+
 ## Known issue to revisit
 
 - During USB testing on the larger touchscreens, boids sometimes struggle to leave their starting strip. Review spawn and escape movement in both Challenge builds, tune it, then rebuild and retest the standalone version.
