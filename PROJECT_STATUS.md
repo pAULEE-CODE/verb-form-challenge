@@ -51,6 +51,10 @@ Start new ideas in a loose conversation and plan the concept before creating a p
 
 Keep each game's content and rules separate. A shared resource can wait until a third quiz or several small variations make the reuse valuable. For small changes to the same quiz, first consider a configurable variant instead of copying the whole game.
 
+## Requested Challenge improvement
+
+- On the results screen, **New game** should return to the player-count selection menu. This lets the next group choose a different number of players without navigating back through the current flow.
+
 ## Known issue to revisit
 
 - During USB testing on the larger touchscreens, boids sometimes struggle to leave their starting strip. Review spawn and escape movement in both Challenge builds, tune it, then rebuild and retest the standalone version.
