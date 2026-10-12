@@ -11,6 +11,10 @@ GitHub's repository file view shows HTML source code. Once GitHub Pages is enabl
 
 These builds run in a browser. The solo preview is a static practice build. Online solo scores and the leaderboard use the Google Apps Script project in [`apps-script/`](apps-script/README.md).
 
+## USB testing
+
+For tablets or large Android touchscreens where a single file is easier to open, use [the self-contained challenge build](challenge/usb/verb-challenge-boids-predatory.html). Open its file page on GitHub and choose **Download raw file**, then copy the downloaded HTML file to the USB drive. It contains the same embedded verb-bank data as the canonical shared file. When the challenge changes, regenerate this bundled file from the shared source.
+
 ## Project layout
 
 - `shared-assets/verb-bank.js` — canonical verb data shared by the static game builds.
