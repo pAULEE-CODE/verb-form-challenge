@@ -45,6 +45,12 @@ Online single-player scores are handled separately by the Google Apps Script sou
 
 The game landing page should feel inviting and international, with people from around the world challenging each other. Keep boids out of the landing artwork; they are only a cosmetic in the local Challenge build. The landing page is intended to offer Single player and Challenge, with a global ranked version planned for the solo experience. Current visual work is to establish the artwork first, then place the interactive choices over it.
 
+## Workflow for future game ideas
+
+Start new ideas in a loose conversation and plan the concept before creating a project. Once the idea is clear enough, create its own project folder or repository, then review this project for interface pieces and lessons worth carrying over.
+
+Keep each game's content and rules separate. A shared resource can wait until a third quiz or several small variations make the reuse valuable. For small changes to the same quiz, first consider a configurable variant instead of copying the whole game.
+
 ## Before resuming work
 
 1. Read `BUILD_MODES.md` and preserve its shared-data and spelling-rule requirements.
