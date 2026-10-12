@@ -25,6 +25,10 @@ python3 scripts/build_standalone_challenge.py
 
 This keeps the downloadable HTML in sync with the same source used by the web build.
 
+## Returning to the project
+
+Start with [PROJECT_STATUS.md](PROJECT_STATUS.md) for the handover, then read [BUILD_MODES.md](BUILD_MODES.md) before changing a build.
+
 ## Build rules
 
 See [BUILD_MODES.md](BUILD_MODES.md) for the three test versions and the rules for keeping their data and spelling logic aligned.
