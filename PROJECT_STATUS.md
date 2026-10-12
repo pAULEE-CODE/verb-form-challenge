@@ -9,6 +9,10 @@ The verb game began as a Unity project around 2016. After returning to it years 
 
 Paul often develops several ideas at once. Keep this note current when a decision, build, or important test changes so the project can be resumed without relying on chat history.
 
+## Legacy Unity project
+
+The original Unity project from around 2016 may contain useful mechanics, assets, or design ideas. It has not yet been inspected as part of this HTML project. When Unity porting begins, review the original project before rebuilding: identify what can be recovered, compare it with the current browser prototype, and record what is carried forward, adapted, or left behind. Do not assume the old work is disposable or that its details are already known.
+
 ## Current project
 
 Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/verb-form-challenge)
