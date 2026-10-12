@@ -4,10 +4,12 @@ A browser based English verb practice project. The solo and challenge modes use 
 
 ## Play
 
-- [Single player preview](solo/verb-form-challenge.html)
-- [Challenge mode with boids](challenge/verb-challenge-boids-predatory.html)
+GitHub's repository file view shows HTML source code. Once GitHub Pages is enabled for this repository, use these game links:
 
-These builds run in a browser. The solo preview is a local/static practice build. Online solo scores and the leaderboard use the Google Apps Script project in [`apps-script/`](apps-script/README.md).
+- [Single player preview](https://paulee-code.github.io/verb-form-challenge/solo/verb-form-challenge.html)
+- [Challenge mode with boids](https://paulee-code.github.io/verb-form-challenge/challenge/verb-challenge-boids-predatory.html)
+
+These builds run in a browser. The solo preview is a static practice build. Online solo scores and the leaderboard use the Google Apps Script project in [`apps-script/`](apps-script/README.md).
 
 ## Project layout
 
