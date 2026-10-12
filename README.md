@@ -15,6 +15,16 @@ These builds run in a browser. The solo preview is a static practice build. Onli
 
 For tablets or large Android touchscreens where a single file is easier to open, use [the self-contained challenge build](challenge/usb/verb-challenge-boids-predatory.html). Open its file page on GitHub and choose **Download raw file**, then copy the downloaded HTML file to the USB drive. It contains the same embedded verb-bank data as the canonical shared file. When the challenge changes, regenerate this bundled file from the shared source.
 
+## Rebuild the USB version
+
+The USB file is a generated bundle of the modular challenge and canonical verb bank. Make changes in the modular challenge or shared bank, then regenerate the one-file version with:
+
+```sh
+python3 scripts/build_standalone_challenge.py
+```
+
+This keeps the downloadable HTML in sync with the same source used by the web build.
+
 ## Project layout
 
 - `shared-assets/verb-bank.js` — canonical verb data shared by the static game builds.
