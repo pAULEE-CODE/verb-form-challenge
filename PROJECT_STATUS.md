@@ -1,6 +1,6 @@
 # Project handover
 
-**Last updated:** 12 October 2026  
+**Last updated:** 14 October 2026  
 **Purpose:** Quickly restore context after a break. Read this and [BUILD_MODES.md](BUILD_MODES.md) before making project changes.
 
 ## Why this project exists
@@ -22,6 +22,7 @@ Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/ver
 | Single player | `solo/verb-form-challenge.html` | Static browser practice build; ten questions. |
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Multiplayer challenge build; each round randomly has 8–12 questions, and players do not see how many remain. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | Bundled one-file challenge for USB/offline testing on larger touchscreens. |
+| Choice test (experimental) | `challenge/usb/verb-challenge-choice-test.html` | Standalone classroom test with selectable answer-count difficulty; other builds remain unchanged. |
 
 Online single-player scores are handled separately by the Google Apps Script source in `apps-script/`, with results stored in Google Sheets. GitHub Pages hosts static HTML; it does not run the Apps Script backend.
 
@@ -32,6 +33,7 @@ Online single-player scores are handled separately by the Google Apps Script sou
 - Standalone is a bundled copy of Challenge, not a separate game or ruleset. Generate it with `python3 scripts/build_standalone_challenge.py`; do not edit the generated file by hand.
 - In Challenge, a correct answer gives its winner ten boids in that player's color. A flock spawns together in the player's colored strip. Boids hunt opposing colors only within range; collisions between opposing boids remove both, while a player's own boids cannot cancel each other. The boids are a local spectator animation.
 - The current design does not include the blob.
+- The answer-choice trial is isolated to the experimental standalone test file until classroom feedback is reviewed.
 - The game is being prototyped in HTML first so gameplay and presentation can be tested before deciding on an Android or Unity port.
 
 ## Current web and data setup
@@ -51,15 +53,16 @@ Start new ideas in a loose conversation and plan the concept before creating a p
 
 Keep each game's content and rules separate. A shared resource can wait until a third quiz or several small variations make the reuse valuable. For small changes to the same quiz, first consider a configurable variant instead of copying the whole game.
 
-## Requested Challenge improvement
+## Classroom test build
 
-- On the results screen, **New game** should return to the player-count selection menu. This lets the next group choose a different number of players without navigating back through the current flow.
+The experimental standalone build at `challenge/usb/verb-challenge-choice-test.html` includes the requested Challenge setup changes:
 
-## Requested Challenge difficulty choice
+- 2–4 players.
+- 3–8 answer choices, defaulting to 3, with labeled and color-coded levels: Warm-up, Easy, Steady, Tricky, Hard, and Expert.
+- Random 8–12-question rounds; the total is hidden during play.
+- Challenge **New game** returns to player selection.
 
-- Before a Challenge round, ask players to choose the number of answer choices: 3, 4, 5, 6, 7, or 8. This setting applies to Challenge only.
-- Present each level with a clear word label and button colour; settle the exact names and palette during interface design.
-- If challenge results are collected later, record the selected choice count with the session so scores can be interpreted fairly.
+The browser Challenge and regular standalone build are unchanged. Review the test feedback before deciding whether to carry these changes into them. The choice count should be recorded if Challenge results are collected later.
 
 ## Known issue to revisit
 
