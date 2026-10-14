@@ -8,7 +8,13 @@ Use this note whenever changing the Verb Form Challenge. We maintain three test 
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Browser challenge build with the boids animation. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | One-file challenge build for USB and offline device testing. |
 
-The standalone file is a bundled build of Challenge, not a separate ruleset.
+The standalone files are bundled builds of Challenge, not separate rulesets. The regular USB build is generated from the modular Challenge. The experimental choice test is a test-only variant; the browser builds remain unchanged until feedback is reviewed.
+
+## Current standalone test variant
+
+`challenge/usb/verb-challenge-choice-test.html` is the build for the next classroom test. It has 2–4 players, selectable 3–8 answer choices with 3 selected by default, and random hidden 8–12-question rounds. Its Challenge **New game** button returns to player-count selection. These changes are isolated to this experimental file until reviewed.
+
+The regular build script writes `challenge/usb/verb-challenge-boids-predatory.html`; it does not overwrite the choice-test file.
 
 ## Rules that must stay shared
 
