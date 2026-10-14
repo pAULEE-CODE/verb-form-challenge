@@ -13,7 +13,9 @@ These builds run in a browser. The solo preview is a static practice build. Onli
 
 ## USB testing
 
-For tablets or large Android touchscreens where a single file is easier to open, use [the self-contained challenge build](challenge/usb/verb-challenge-boids-predatory.html). Open its file page on GitHub and choose **Download raw file**, then copy the downloaded HTML file to the USB drive. It contains the same embedded verb-bank data as the canonical shared file. When the challenge changes, regenerate this bundled file from the shared source.
+For the current answer-choice test, use [the experimental standalone build](challenge/usb/verb-challenge-choice-test.html). It supports 2–4 players, 3–8 choices (default 3), and hidden random rounds of 8–12 questions. Open its file page on GitHub and choose **Download raw file**, then copy the HTML file to the USB drive.
+
+The regular self-contained challenge build remains at [challenge/usb/verb-challenge-boids-predatory.html](challenge/usb/verb-challenge-boids-predatory.html). Both files embed their verb data. The experimental choice test is separate from the browser builds while the kids try it.
 
 ## Rebuild the USB version
 
