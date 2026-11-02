@@ -7,6 +7,7 @@ Use this note whenever changing the Verb Form Challenge. We maintain three test 
 | Single player | `solo/verb-form-challenge.html` | Browser practice build. |
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Browser challenge build with the boids animation. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | One-file challenge build for USB and offline device testing. |
+| Anson's Game | `challenge/usb/ansons-game.html` | One-player educational build with timed enemy waves and three-hit boid battles. |
 
 The standalone files are bundled builds of Challenge, not separate rulesets. The regular USB build is generated from the modular Challenge. The experimental choice test is a test-only variant; the browser builds remain unchanged until feedback is reviewed.
 
@@ -15,6 +16,10 @@ The standalone files are bundled builds of Challenge, not separate rulesets. The
 `challenge/usb/verb-challenge-choice-test.html` is the build for the next classroom test. It has 2–4 players, selectable 3–8 answer choices with 3 selected by default, and random hidden 8–12-question rounds. Its Challenge **New game** button returns to player-count selection. These changes are isolated to this experimental file until reviewed.
 
 The regular build script writes `challenge/usb/verb-challenge-boids-predatory.html`; it does not overwrite the choice-test file.
+
+## Anson's Game prototype
+
+`challenge/usb/ansons-game.html` is a separate standalone educational solo version. It keeps the 10-question round and 3–8 answer choices (default 3), releases ten player boids immediately after a correct answer, and lets the adult choose fixed, answer-linked, or adaptive enemy-wave timing. Enemy boids enter from the far edge in adjustable groups; each boid has three hit points and collisions knock opponents apart. The boids move through the question and answer area without treating the controls as obstacles. Keep this experimental build separate from the regular Challenge builds while it is being tried with Anson.
 
 ## Rules that must stay shared
 
