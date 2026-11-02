@@ -1,6 +1,6 @@
 # Project handover
 
-**Last updated:** 14 October 2026  
+**Last updated:** 2 November 2026  
 **Purpose:** Quickly restore context after a break. Read this and [BUILD_MODES.md](BUILD_MODES.md) before making project changes.
 
 ## Why this project exists
@@ -23,6 +23,7 @@ Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/ver
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Multiplayer challenge build; each round randomly has 8–12 questions, and players do not see how many remain. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | Bundled one-file challenge for USB/offline testing on larger touchscreens. |
 | Choice test (experimental) | `challenge/usb/verb-challenge-choice-test.html` | Standalone classroom test with selectable answer-count difficulty; other builds remain unchanged. |
+| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | One-player read-aloud build with 3–8 choices, configurable enemy timing, and three-hit boid battles. |
 
 Online single-player scores are handled separately by the Google Apps Script source in `apps-script/`, with results stored in Google Sheets. GitHub Pages hosts static HTML; it does not run the Apps Script backend.
 
