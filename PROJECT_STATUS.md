@@ -29,7 +29,7 @@ Online single-player scores are handled separately by the Google Apps Script sou
 
 ### Anson's Game prototype
 
-The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Fixed enemy waves can arrive every 1–7 seconds (default 4), with a selectable wave size from 2 to 10 (default 10, the same as the player's salvo). Other timing experiments remain available: one second after each answer, or adaptive timing using the answer duration, clamped to 1–7 seconds. The answer-to-wave timing modes and 10-question, 3–8-choice solo format remain isolated in this experimental standalone file. Test the wave density and 3-HP collisions on classroom touchscreens before changing the regular Challenge modes.
+The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Fixed enemy waves can arrive every 1–7 seconds (default 4), with a selectable wave size from 2 to 10 (default 10, the same as the player's salvo). The adult can cap active enemies from 10 to 100 (default 40). The enlarged boid arena sits below the question and answer controls, keeping boids out of the displayed verbs and missing-word prompt. Other timing experiments remain available: one second after each answer, or adaptive timing using the answer duration, clamped to 1–7 seconds. The answer-to-wave timing modes and 10-question, 3–8-choice solo format remain isolated in this experimental standalone file. Test the arena size, wave density, and 3-HP collisions on classroom touchscreens before changing the regular Challenge modes.
 
 ## Decisions to preserve
 
