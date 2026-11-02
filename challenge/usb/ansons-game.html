@@ -168,6 +168,11 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
 .enemy-interval-setting input { flex:1; accent-color:#ff9a8d; }
 .enemy-interval-setting output { min-width:4ch; color:#ffcf79; font-size:1.1rem; font-variant-numeric:tabular-nums; }
 @media(max-width:520px){.enemy-setting-grid{grid-template-columns:1fr}.anson-timer-label{font-size:.8rem}}
+#app-shell { width:min(100% - 48px, 1440px); }
+.boid-arena { position:relative; isolation:isolate; overflow:hidden; width:100%; min-height:clamp(360px,52vh,680px); margin:20px 0 4px; border:1px solid #35566b; border-radius:18px; background:radial-gradient(ellipse at 50% 40%, rgba(35,82,103,.5), rgba(6,18,28,.95) 75%); box-shadow:inset 0 0 40px rgba(1,9,15,.45); }
+.boid-arena::before { content:"BOID ARENA"; position:absolute; top:12px; left:16px; z-index:0; color:rgba(194,223,236,.36); font-size:.72rem; font-weight:850; letter-spacing:.16em; pointer-events:none; }
+.boid-arena .boid-overlay { z-index:1; }
+@media(max-width:700px){#app-shell{width:min(100% - 20px,1440px)}.boid-arena{min-height:clamp(320px,48vh,540px)}}
 </style>
 </head>
 <body>
@@ -222,6 +227,17 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
               <option value="10" selected>10 boids · same as player</option>
             </select>
           </label>
+          <label for="enemy-limit">Maximum enemy boids
+            <select id="enemy-limit">
+              <option value="10">10 boids</option>
+              <option value="20">20 boids</option>
+              <option value="30">30 boids</option>
+              <option value="40" selected>40 boids</option>
+              <option value="50">50 boids</option>
+              <option value="75">75 boids</option>
+              <option value="100">100 boids</option>
+            </select>
+          </label>
         </div>
         <label class="enemy-interval-setting" id="enemy-interval-setting" for="enemy-interval">Enemy wave interval
           <div><input id="enemy-interval" type="range" min="1" max="7" step="1" value="4"><output id="enemy-interval-value" for="enemy-interval">4 s</output></div>
@@ -242,6 +258,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       <div id="word-pattern" class="word-pattern" aria-live="polite"></div>
       <div id="choices" class="choices" role="group" aria-label="Answer choices"></div>
       <p id="feedback" class="feedback" aria-live="polite"></p>
+      <div id="boid-arena" class="boid-arena" role="img" aria-label="Animated battle arena for the player's boids and enemy boids"></div>
       <button id="next-button" class="button button-secondary" hidden>Next question</button>
     </section>
 
@@ -898,35 +915,39 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
 (function () {
   'use strict';
   const quiz = document.getElementById('quiz');
+  const arena = document.getElementById('boid-arena');
   const timer = document.getElementById('timer');
   const modeSelect = document.getElementById('enemy-timing-mode');
   const intervalInput = document.getElementById('enemy-interval');
   const intervalValue = document.getElementById('enemy-interval-value');
   const intervalSetting = document.getElementById('enemy-interval-setting');
   const waveSizeSelect = document.getElementById('enemy-wave-size');
-  if (!quiz || !timer) return;
+  const enemyLimitSelect = document.getElementById('enemy-limit');
+  if (!quiz || !arena || !timer) return;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const norm=(x,y)=>{const d=Math.hypot(x,y)||1;return{x:x/d,y:y/d};};
   const TAU=Math.PI*2, HIT_R=12, PLAYER_COLOR='#28f3d1', ENEMY_COLOR='#ff4b65';
   let canvas,ctx,W=0,H=0,dpr=1,raf=0,last=0,boids=[],roundOn=false,nextWaveAt=0,collisions=0;
-  let clockMode='fixed',intervalSeconds=4,waveSize=10;
+  let clockMode='fixed',intervalSeconds=4,waveSize=10,maxEnemyBoids=40;
   function readSettings(){
     clockMode=modeSelect.value;
     intervalSeconds=Number(intervalInput.value)||4;
     waveSize=Number(waveSizeSelect.value)||10;
+    maxEnemyBoids=Number(enemyLimitSelect.value)||40;
     intervalSetting.hidden=clockMode!=='fixed';
     intervalValue.textContent=intervalSeconds+' s';
   }
   modeSelect.addEventListener('change',readSettings);
   intervalInput.addEventListener('input',readSettings);
   waveSizeSelect.addEventListener('change',readSettings);
+  enemyLimitSelect.addEventListener('change',readSettings);
   readSettings();
-  quiz.classList.add('boid-stage');
-  canvas=document.createElement('canvas');canvas.className='boid-overlay';canvas.setAttribute('aria-hidden','true');quiz.appendChild(canvas);
+  arena.classList.add('boid-stage');
+  canvas=document.createElement('canvas');canvas.className='boid-overlay';canvas.setAttribute('aria-hidden','true');arena.appendChild(canvas);
   ctx=canvas.getContext('2d');if(!ctx)return;
   function resize(){
-    W=quiz.clientWidth;H=quiz.clientHeight;dpr=Math.min(window.devicePixelRatio||1,2);
+    W=arena.clientWidth;H=arena.clientHeight;dpr=Math.min(window.devicePixelRatio||1,2);
     canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
@@ -942,8 +963,9 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   function spawnEnemyWave(){
     if(!W||!H)resize();
     // Enemies enter from spaced points along the far/top edge, facing the child's side.
-    // Bound the field so a one-second experimental interval stays responsive on classroom tablets.
-    for(let i=0;i<waveSize&&boids.length<240;i++){
+    // Respect the selected active-enemy limit as well as a safe total-field ceiling.
+    let activeEnemies=boids.reduce((count,b)=>count+(b.team===1?1:0),0);
+    for(let i=0;i<waveSize&&activeEnemies<maxEnemyBoids&&boids.length<240;i++,activeEnemies++){
       const spread=(i-(waveSize-1)/2)*Math.min(50,W/(waveSize+1));
       const x=clamp(W*.5+spread+rnd(-12,12),16,W-16),y=18+rnd(0,16),a=rnd(Math.PI*.18,Math.PI*.82),s=rnd(1.1,1.9);
       boids.push(createBoid(1,x,y,Math.cos(a)*s,Math.sin(a)*s));
@@ -968,7 +990,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   function tick(now){
     raf=requestAnimationFrame(tick);
     if(!quiz.hidden&&quiz.getClientRects().length){
-      if(!W||Math.abs(W-quiz.clientWidth)>1||Math.abs(H-quiz.clientHeight)>1)resize();
+      if(!W||Math.abs(W-arena.clientWidth)>1||Math.abs(H-arena.clientHeight)>1)resize();
       if(roundOn)updateClock(now);
       const dt=clamp((now-last)/16.67,.3,1.8);last=now;
       moveBoids(dt,now);collide(now);draw();
