@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#152a3a">
+  <title>Anson's Game · Listen and Choose</title>
+  <style>
+:root {
+  color-scheme: dark;
+  --page: #0b1721;
+  --panel: #142635;
+  --panel-light: #1c3446;
+  --line: #2a465a;
+  --text: #f4f8fb;
+  --muted: #b3c4d1;
+  --cyan: #65d9e7;
+  --cyan-dark: #173d4d;
+  --green: #72dfae;
+  --red: #ff9a9a;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 50% -15%, #1b3d52 0, var(--page) 62%); color: var(--text); }
+button { font: inherit; }
+.app-shell { width: min(100% - 32px, 720px); margin: 0 auto; padding: 42px 0 24px; }
+.masthead { text-align: center; margin: 0 auto 26px; }
+.eyebrow { margin: 0 0 9px; color: var(--cyan); font-size: .73rem; font-weight: 800; letter-spacing: .19em; }
+h1 { margin: 0; font-size: clamp(2rem, 7vw, 3.3rem); line-height: 1.08; letter-spacing: -.04em; }
+.subtitle { color: var(--muted); margin: 11px 0 0; }
+.card { background: linear-gradient(145deg, rgba(25,48,65,.98), rgba(17,35,49,.98)); border: 1px solid var(--line); border-radius: 22px; padding: clamp(22px, 5vw, 38px); box-shadow: 0 22px 60px rgba(0,0,0,.26); }
+.welcome-card, .results-card { text-align: center; }
+.welcome-mark { width: 64px; height: 64px; display: grid; place-items: center; margin: 0 auto 17px; border: 1px solid #438494; border-radius: 20px; background: var(--cyan-dark); color: var(--cyan); font-size: 2rem; font-weight: 900; }
+h2 { margin: 0; font-size: clamp(1.3rem, 4vw, 1.8rem); }
+.welcome-card > p:not(.small-note) { max-width: 430px; margin: 12px auto 24px; color: var(--muted); line-height: 1.6; }
+.button { border: 0; border-radius: 12px; min-height: 48px; padding: 12px 20px; cursor: pointer; font-weight: 800; transition: transform .12s ease, filter .12s ease, border-color .12s ease; }
+.button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.button:focus-visible, .choice:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.button-primary { background: var(--cyan); color: #09212b; }
+.button-secondary { display: block; margin: 22px 0 0 auto; background: #29485b; color: var(--text); border: 1px solid #42657a; }
+.small-note { color: #8fa8b9; font-size: .84rem; margin: 20px 0 0; }
+.quiz-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .92rem; font-weight: 700; }
+.score { color: var(--green); }
+.progress-track { height: 7px; border-radius: 99px; background: #0d1d29; margin: 15px 0 22px; overflow: hidden; }
+.progress-fill { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #54bfda, var(--cyan)); transition: width .25s ease; }
+.timer-line { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: .9rem; }
+.timer-line strong { color: var(--text); font-variant-numeric: tabular-nums; }
+.timer-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px rgba(114,223,174,.55); }
+.question-prompt { margin: 25px 0 13px; color: var(--muted); font-size: 1rem; font-weight: 600; }
+.word-pattern { min-height: 91px; display: flex; align-items: center; justify-content: center; gap: clamp(10px, 4vw, 24px); margin: 0 0 24px; padding: 20px 12px; border-radius: 16px; background: rgba(7,19,28,.45); border: 1px solid rgba(77,112,134,.38); font-size: clamp(1.8rem, 7vw, 2.7rem); font-weight: 850; letter-spacing: -.025em; }
+.word-pattern .blank { color: var(--cyan); letter-spacing: .08em; }
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.choice { min-height: 61px; padding: 12px; border: 1px solid #3a5b70; border-radius: 13px; color: var(--text); background: var(--panel-light); cursor: pointer; font-size: clamp(1.12rem, 4vw, 1.42rem); font-weight: 800; transition: background .12s ease, transform .12s ease, border-color .12s ease; }
+.choice:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--cyan); background: #24475a; }
+.choice:disabled { cursor: default; opacity: .8; }
+.choice.correct { border-color: var(--green); color: #baf5d9; background: #163b35; }
+.choice.incorrect { border-color: #b65e6a; color: #ffc1c1; background: #462830; }
+.feedback { min-height: 27px; margin: 15px 0 0; font-weight: 750; }
+.feedback.good { color: var(--green); }
+.feedback.bad { color: var(--red); }
+.final-score { color: var(--cyan); font-size: 1.35rem; font-weight: 850; margin: 12px 0 18px; }
+.time-results { display: grid; gap: 8px; max-width: 440px; margin: 0 auto 24px; text-align: left; }
+.time-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 13px; border-radius: 10px; background: rgba(7,19,28,.45); color: var(--muted); }
+.time-row strong { color: var(--text); font-variant-numeric: tabular-nums; }
+footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8px 0; }
+[hidden] { display: none !important; }
+@media (max-width: 460px) { .app-shell { width: min(100% - 20px, 720px); padding-top: 28px; } .card { border-radius: 17px; } .choices { gap: 8px; } .choice { min-height: 56px; padding: 9px 5px; } }
+
+/* Mode selection and split-screen challenge areas */
+.mode-selector { display: flex; justify-content: center; gap: 10px; margin: 21px 0 14px; }
+.mode-button, .count-button { border: 1px solid #426176; border-radius: 11px; padding: 10px 19px; background: #1c3446; color: var(--muted); cursor: pointer; font-weight: 800; }
+.mode-button.selected, .count-button.selected { background: var(--cyan-dark); color: var(--cyan); border-color: var(--cyan); box-shadow: inset 0 0 0 1px rgba(101,217,231,.18); }
+.player-count-row { display: flex; justify-content: center; align-items: center; gap: 13px; margin: 14px 0 19px; color: var(--muted); font-weight: 750; }
+.player-count-selector { display: flex; gap: 7px; }
+.choice-count-row { display:grid; justify-items:center; gap:9px; margin:14px auto 18px; color:var(--muted); font-weight:750; }
+.choice-count-selector { display:grid; grid-template-columns:repeat(3,minmax(88px,1fr)); gap:8px; width:min(100%,500px); }
+.difficulty-button { min-height:58px; padding:8px 10px; border:1px solid #486276; border-radius:12px; background:#182d3c; color:#cfdee7; cursor:pointer; font-weight:800; }
+.difficulty-button strong { display:block; font-size:1.08rem; }
+.difficulty-button span { display:block; font-size:.76rem; margin-top:2px; }
+.difficulty-button { --level:#6fdab5; }
+.difficulty-button.level-3 { --level:#56d69a; }
+.difficulty-button.level-4 { --level:#58c9e8; }
+.difficulty-button.level-5 { --level:#43c7c0; }
+.difficulty-button.level-6 { --level:#a990f5; }
+.difficulty-button.level-7 { --level:#ffae58; }
+.difficulty-button.level-8 { --level:#ff788c; }
+.difficulty-button.selected { color:var(--level); border-color:var(--level); background:rgba(94,142,159,.22); box-shadow:0 0 0 2px color-mix(in srgb,var(--level) 30%,transparent); }
+.difficulty-button:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+.choice-count-description { margin:0; font-size:.82rem; color:var(--muted); font-weight:500; }
+.count-button { min-width: 42px; padding: 8px 11px; }
+.challenge-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+.challenge-grid.players-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.challenge-grid.players-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.player-area { min-width: 0; padding: 13px; border: 0; border-left: 5px solid var(--player-border, #37566a); border-radius: 8px; background: linear-gradient(145deg, var(--player-wash, rgba(8,21,31,.55)), var(--player-deep, rgba(8,21,31,.55))); box-shadow: inset 0 0 0 1px var(--player-glow, transparent); }
+.player-title { margin: 0; color: var(--player-light, var(--text)); font-size: 1rem; }
+.player-score { color: var(--player-accent, var(--cyan)); font-size: .82rem; margin: 4px 0 11px; }
+.player-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.player-choices .choice { min-height: 44px; font-size: 1rem; border-color: var(--player-border, #3a5b70); background: var(--player-deep, var(--panel-light)); }
+.choice.selected-orange { border-color: #ffad61; color: #fff1dc; background: #9b551f; box-shadow: 0 0 0 2px rgba(255,173,97,.17); }
+.results-note { text-align: center; margin: 5px 0 0; }
+.challenge-result-row strong { white-space: nowrap; }
+@media (max-width: 620px) {
+  .challenge-grid.players-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  .challenge-grid, .challenge-grid.players-3, .challenge-grid.players-4 { grid-template-columns: 1fr; }
+  .player-count-row { flex-wrap: wrap; }
+  .choice-count-selector { grid-template-columns:repeat(2,minmax(100px,1fr)); }
+}
+
+
+/* Give each local Challenge player a full-width panel on large displays. */
+.app-shell.challenge-layout { width: min(100% - 48px, 1440px); }
+.challenge-grid.players-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.challenge-grid.players-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.challenge-grid.players-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 900px) {
+  .app-shell.challenge-layout { width: min(100% - 32px, 800px); }
+  .challenge-grid.players-3, .challenge-grid.players-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 580px) {
+  .app-shell.challenge-layout { width: min(100% - 20px, 560px); }
+  .challenge-grid.players-2, .challenge-grid.players-3, .challenge-grid.players-4 { grid-template-columns: 1fr; }
+}
+
+
+/* Eight solo choices make a balanced four-by-two grid. */
+.choices { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 600px) { .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Larger targets for touch-screen displays. */
+@media (pointer: coarse) {
+  .choice { min-height: 68px; padding: 14px 10px; }
+  .player-choices .choice { min-height: 64px; padding: 12px 8px; }
+  .mode-button, .count-button, .difficulty-button, .button { min-height: 64px; }
+}
+
+/* Interactive Challenge stage with a pointer-transparent moving flock. */
+.boid-stage { position: relative; isolation: isolate; overflow: hidden; }
+.boid-overlay { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; display: block; }
+.boid-tuning { margin: 0 0 14px; border: 1px solid #416178; border-radius: 15px; background: #122a39; padding: 12px 16px; color: #e5f2f7; }
+.boid-tuning-head {display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:.85rem;color:#c3e3ec;margin-bottom:10px;}
+.boid-knobs {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.boid-knobs label {display:grid;grid-template-columns:1fr auto;gap:4px;font-size:.8rem;color:#d6e8ed;}
+.boid-knobs input {grid-column:1 / -1;width:100%;accent-color:#77dce6;}
+.boid-knobs output {font-variant-numeric:tabular-nums;color:#77dce6;}
+.boid-tuning-foot {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;}
+.boid-tuning-foot code {font-size:.85rem;color:#a2efca;}
+.boid-tuning-foot button {color:#f1fbff;border:1px solid #557486;background:#26475c;border-radius:9px;padding:7px 12px;cursor:pointer;}
+@media(max-width:640px){.boid-knobs{grid-template-columns:1fr}.boid-tuning-head{align-items:start;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.boid-overlay{opacity:.25}}
+
+
+/* Anson's Game: readable one-player layout and a prominent enemy-wave clock. */
+#quiz > :not(.boid-overlay) { position: relative; z-index: 1; }
+.anson-timer { justify-content:center; gap:14px; margin:8px 0 18px; padding:12px 18px; border:1px solid #4c7286; border-radius:16px; background:rgba(5,19,29,.68); }
+.anson-timer .timer-dot { width:13px; height:13px; background:#ff7183; box-shadow:0 0 16px rgba(255,113,131,.7); }
+.anson-timer-label { color:#d5e8ef; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.anson-timer strong { color:#ffcf79; font-size:clamp(2.2rem,7vw,4rem); line-height:1; min-width:2.1ch; text-align:center; }
+.anson-timer-unit { color:#c4d7e1; font-size:1.1rem; }
+.enemy-settings { max-width:560px; margin:20px auto 22px; padding:16px; border:1px solid #35566b; border-radius:16px; background:rgba(8,22,32,.55); text-align:left; }
+.enemy-settings h3 { margin:0 0 12px; color:#dff5fb; font-size:1rem; }
+.enemy-setting-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:12px; }
+.enemy-setting-grid label { display:grid; gap:6px; color:#bfd1dc; font-size:.86rem; font-weight:700; }
+.enemy-setting-grid select { width:100%; min-height:44px; padding:8px 10px; border:1px solid #426176; border-radius:10px; background:#142b3b; color:var(--text); font:inherit; }
+.enemy-interval-setting { margin-top:14px; color:#bfd1dc; font-size:.88rem; font-weight:700; }
+.enemy-interval-setting > div { display:flex; align-items:center; gap:12px; margin-top:6px; }
+.enemy-interval-setting input { flex:1; accent-color:#ff9a8d; }
+.enemy-interval-setting output { min-width:4ch; color:#ffcf79; font-size:1.1rem; font-variant-numeric:tabular-nums; }
+@media(max-width:520px){.enemy-setting-grid{grid-template-columns:1fr}.anson-timer-label{font-size:.8rem}}
+</style>
+</head>
+<body>
+  <main class="app-shell" id="app-shell">
+    <header class="masthead">
+      <p class="eyebrow">LISTEN · LOOK · CHOOSE</p>
+      <h1>Anson's Game</h1>
+      <p class="subtitle">Listen to the question. Look at the words. Choose the missing form.</p>
+    </header>
+
+    <section id="welcome" class="card welcome-card" aria-labelledby="welcome-title">
+      <div class="welcome-mark" aria-hidden="true">A</div>
+      <h2 id="welcome-title">Ready to listen and choose?</h2>
+      <p>An adult reads each question aloud. Choose the missing word to release your boids.</p>
+      <div id="player-count-row" class="player-count-row" hidden>
+        <span>Players</span>
+        <div class="player-count-selector" role="group" aria-label="Number of players">
+          <button class="count-button selected" data-count="2" type="button">2</button>
+          <button class="count-button" data-count="3" type="button">3</button>
+          <button class="count-button" data-count="4" type="button">4</button>
+        </div>
+      </div>
+      <div id="choice-count-row" class="choice-count-row">
+        <span>Choose the number of answer choices</span>
+        <div class="choice-count-selector" role="group" aria-label="Choose challenge difficulty and answer count">
+          <button class="difficulty-button level-3 selected" data-choice-count="3" type="button" aria-pressed="true"><strong>3 choices</strong><span>Warm-up</span></button>
+          <button class="difficulty-button level-4" data-choice-count="4" type="button" aria-pressed="false"><strong>4 choices</strong><span>Easy</span></button>
+          <button class="difficulty-button level-5" data-choice-count="5" type="button" aria-pressed="false"><strong>5 choices</strong><span>Steady</span></button>
+          <button class="difficulty-button level-6" data-choice-count="6" type="button" aria-pressed="false"><strong>6 choices</strong><span>Tricky</span></button>
+          <button class="difficulty-button level-7" data-choice-count="7" type="button" aria-pressed="false"><strong>7 choices</strong><span>Hard</span></button>
+          <button class="difficulty-button level-8" data-choice-count="8" type="button" aria-pressed="false"><strong>8 choices</strong><span>Expert</span></button>
+        </div>
+        <p id="choice-count-description" class="choice-count-description">3 choices · Warm-up</p>
+      </div>
+      <section class="enemy-settings" aria-label="Enemy boid timing settings">
+        <h3>Enemy boid arrival</h3>
+        <div class="enemy-setting-grid">
+          <label for="enemy-timing-mode">Timing experiment
+            <select id="enemy-timing-mode">
+              <option value="fixed">Every set interval</option>
+              <option value="after-answer">1 second after each answer</option>
+              <option value="adaptive">Adaptive · based on answer time</option>
+            </select>
+          </label>
+          <label for="enemy-wave-size">Enemy boids per wave
+            <select id="enemy-wave-size">
+              <option value="1">1 boid</option>
+              <option value="2" selected>2 boids</option>
+              <option value="3">3 boids</option>
+              <option value="4">4 boids</option>
+            </select>
+          </label>
+        </div>
+        <label class="enemy-interval-setting" id="enemy-interval-setting" for="enemy-interval">Time between waves
+          <div><input id="enemy-interval" type="range" min="5" max="60" step="1" value="20"><output id="enemy-interval-value" for="enemy-interval">20 s</output></div>
+        </label>
+      </section>
+      <button id="start-button" class="button button-primary">Start Anson's Game</button>
+      <p id="round-note" class="small-note">10 questions · Starts with 3 choices · Works offline</p>
+    </section>
+
+    <section id="quiz" class="card quiz-card" aria-labelledby="question-title" hidden>
+      <div class="quiz-topline">
+        <span id="question-count" class="question-count">Question 1 of 10</span>
+        <span id="score" class="score">Correct: 0</span>
+      </div>
+      <div id="progress-track" class="progress-track" aria-hidden="true"><div id="progress-fill" class="progress-fill"></div></div>
+      <div class="timer-line anson-timer"><span class="timer-dot" aria-hidden="true"></span><span class="anson-timer-label" id="enemy-timer-label">Next enemy wave</span><strong id="timer">20</strong><span class="anson-timer-unit">s</span></div>
+      <h2 id="question-title" class="question-prompt">Listen to the question, then choose the missing word:</h2>
+      <div id="word-pattern" class="word-pattern" aria-live="polite"></div>
+      <div id="choices" class="choices" role="group" aria-label="Answer choices"></div>
+      <p id="feedback" class="feedback" aria-live="polite"></p>
+      <button id="next-button" class="button button-secondary" hidden>Next question</button>
+    </section>
+
+    <section id="results" class="card results-card" aria-labelledby="results-title" hidden>
+      <p class="eyebrow">TEST COMPLETE</p>
+      <h2 id="results-title">Your results</h2>
+      <p id="final-score" class="final-score"></p>
+      <div id="time-results" class="time-results"></div>
+      <button id="restart-button" class="button button-primary">Play another round</button>
+    </section>
+    <footer>An educational one-player test · no account or internet connection required</footer>
+  </main>
+
+  <script>
+// Canonical irregular-verb bank shared by all Verb Form Challenge modes.
+// Data contract: [base form, simple past, past participle].
+(function (global) {
+  const verbBank = [
+    ['eat','ate','eaten'],
+    ['go','went','gone'],
+    ['write','wrote','written'],
+    ['see','saw','seen'],
+    ['take','took','taken'],
+    ['give','gave','given'],
+    ['come','came','come'],
+    ['run','ran','run'],
+    ['drink','drank','drunk'],
+    ['sing','sang','sung'],
+    ['begin','began','begun'],
+    ['swim','swam','swum'],
+    ['drive','drove','driven'],
+    ['ride','rode','ridden'],
+    ['speak','spoke','spoken'],
+    ['break','broke','broken'],
+    ['choose','chose','chosen'],
+    ['forget','forgot','forgotten'],
+    ['get','got','gotten'],
+    ['know','knew','known'],
+    ['grow','grew','grown'],
+    ['throw','threw','thrown'],
+    ['fly','flew','flown'],
+    ['draw','drew','drawn'],
+    ['show','showed','shown'],
+    ['make','made','made'],
+    ['do','did','done'],
+    ['have','had','had'],
+    ['find','found','found'],
+    ['think','thought','thought'],
+    ['buy','bought','bought'],
+    ['bring','brought','brought'],
+    ['catch','caught','caught'],
+    ['teach','taught','taught'],
+    ['feel','felt','felt'],
+    ['keep','kept','kept'],
+    ['sleep','slept','slept'],
+    ['leave','left','left'],
+    ['lose','lost','lost'],
+    ['build','built','built'],
+    ['send','sent','sent'],
+    ['spend','spent','spent'],
+    ['meet','met','met'],
+    ['sit','sat','sat'],
+    ['stand','stood','stood'],
+    ['understand','understood','understood'],
+    ['hold','held','held'],
+    ['hear','heard','heard'],
+    ['read','read','read'],
+    ['put','put','put'],
+    ['become','became','become'],
+    ['bite','bit','bitten'],
+    ['blow','blew','blown'],
+    ['cost','cost','cost'],
+    ['cut','cut','cut'],
+    ['deal','dealt','dealt'],
+    ['dig','dug','dug'],
+    ['feed','fed','fed'],
+    ['fight','fought','fought'],
+    ['hit','hit','hit'],
+    ['hurt','hurt','hurt'],
+    ['let','let','let'],
+    ['lie','lay','lain'],
+    ['light','lit','lit'],
+    ['pay','paid','paid'],
+    ['quit','quit','quit'],
+    ['rise','rose','risen'],
+    ['say','said','said'],
+    ['sell','sold','sold'],
+    ['shake','shook','shaken'],
+    ['shine','shone','shone'],
+    ['shoot','shot','shot'],
+    ['shut','shut','shut'],
+    ['slide','slid','slid'],
+    ['smell','smelt','smelt'],
+    ['spell','spelt','spelt'],
+    ['steal','stole','stolen'],
+    ['stick','stuck','stuck'],
+    ['strike','struck','struck'],
+    ['sweep','swept','swept'],
+    ['tear','tore','torn'],
+    ['wake','woke','woken'],
+    ['wear','wore','worn'],
+    ['win','won','won'],
+    ['wind','wound','wound'],
+    ['weep','wept','wept'],
+    ['bend','bent','bent'],
+    ['bind','bound','bound'],
+    ['bleed','bled','bled'],
+    ['breed','bred','bred'],
+    ['burst','burst','burst'],
+    ['cling','clung','clung'],
+    ['creep','crept','crept'],
+    ['forbid','forbade','forbidden'],
+    ['forgive','forgave','forgiven'],
+    ['freeze','froze','frozen'],
+    ['hang','hung','hung'],
+    ['hide','hid','hidden'],
+    ['lay','laid','laid'],
+    ['lead','led','led'],
+  ];
+  const frozenBank = Object.freeze(verbBank.map(function (forms) {
+    return Object.freeze(forms.slice());
+  }));
+  global.VerbBank = Object.freeze({verbBank: frozenBank});
+  global.VerbBanks = global.VerbBanks || {};
+  global.VerbBanks.irregular = frozenBank;
+})(window);
+
+</script>
+  <script>
+// Reserved for the later regular -ed bank (approximately 500 verbs).
+// Shared data contract: [base form, simple past, past participle].
+(function (global) {
+  global.VerbBanks = global.VerbBanks || {};
+  global.VerbBanks.regular = Object.freeze([]);
+})(window);
+
+</script>
+  <script>
+// Rule-based distractor generation. This module contains no UI code.
+(function (global) {
+  const suffixes = ['ed','en','ing','er','ise','or','y','an','ly','ize','ate','ous','ive','ish','ful','ant','ity','ism','ee','ist','sion','tion','ment','able','ion'];
+  const vowelPairs = ['ei','ie','ee','ea'];
+  const sounds = [['ph','f'],['f','ph'],['ck','k'],['qu','kw'],['qu','cu'],['qu','ku'],['cu','qu'],['ku','qu'],['tion','shun'],['ai','ay'],['ay','ai'],['ou','ow'],['ow','ou'],['c','k'],['k','c'],['s','z'],['y','i'],['i','y'],['a','e'],['e','a'],['o','u']];
+  const consonant = /[bcdfghjklmnpqrstvwxyz]/i;
+  const vowel = /[aeiou]/i;
+  const families = Object.freeze({
+    'form-recycling':'form-pattern','suffix-ed':'verb-ending','suffix-en':'verb-ending','suffix-ing':'verb-ending',
+    'suffix-ed-doubling':'verb-ending','suffix-en-doubling':'verb-ending','suffix-ing-doubling':'verb-ending',
+    'suffix-er':'word-family','suffix-er-doubling':'word-family','suffix-ise':'word-family','suffix-or':'word-family','suffix-y':'word-family','suffix-an':'word-family','suffix-ly':'word-family','suffix-ize':'word-family','suffix-ate':'word-family','suffix-ous':'word-family','suffix-ive':'word-family','suffix-ish':'word-family','suffix-ful':'word-family','suffix-ant':'word-family','suffix-ity':'word-family','suffix-ism':'word-family','suffix-ee':'word-family','suffix-ist':'word-family','suffix-sion':'word-family','suffix-tion':'word-family','suffix-ment':'word-family','suffix-able':'word-family','suffix-ion':'word-family',
+    'letter-missing':'letter-edit','letter-swap-adjacent':'letter-order','letter-swap-internal':'letter-order','sound-confusion':'phonetic'
+  });
+  function hasAllowedConsonantDoubles(word) {
+    const lower = word.toLowerCase();
+    for (let i = 0; i < lower.length - 1; i++) {
+      if (lower[i] === lower[i + 1] && consonant.test(lower[i]) && !vowel.test(lower[i + 2] || '')) return false;
+      if (lower[i] === lower[i + 1] && /[aiu]/.test(lower[i])) return false;
+      if (lower[i] === lower[i + 1] && vowel.test(lower[i]) && lower[i + 2] === lower[i]) return false;
+    }
+    return true;
+  }
+  function caseLike(source, replacement) {
+    if (source === source.toUpperCase()) return replacement.toUpperCase();
+    if (source[0] === source[0].toUpperCase()) return replacement[0].toUpperCase() + replacement.slice(1);
+    return replacement;
+  }
+  function appendSuffix(stem, suffix) {
+    const lower = stem.toLowerCase();
+    if (suffix === 'ing' && lower.endsWith('e') && !lower.endsWith('ee')) return stem.slice(0, -1) + suffix;
+    if (suffix === 'ed' && lower.endsWith('e')) return stem + 'd';
+    if (suffix === 'er' && lower.endsWith('e')) return stem + 'r';
+    if (['ed','en','ing','er'].includes(suffix) && shouldDouble(stem)) return stem + stem.slice(-1) + suffix;
+    if (suffix === 'tion' && lower.endsWith('te')) return stem.slice(0, -2) + 'tion';
+    if (suffix === 'sion' && lower.endsWith('de')) return stem.slice(0, -2) + 'sion';
+    return stem + suffix;
+  }
+  function shouldDouble(stem) {
+    const lower = stem.toLowerCase();
+    if (lower.endsWith('e') || lower.length < 3) return false;
+    return consonant.test(lower[lower.length - 1]) && vowel.test(lower[lower.length - 2]) && consonant.test(lower[lower.length - 3]) && !/[wxy]/.test(lower[lower.length - 1]);
+  }
+  function addsConsonantDouble(value, stem) {
+    const lower = value.toLowerCase(), source = stem.toLowerCase();
+    for (let i = 0; i < lower.length - 1; i++) if (lower[i] === lower[i + 1] && consonant.test(lower[i]) && !source.includes(lower[i] + lower[i])) return true;
+    return false;
+  }
+  function makeCandidates(answer, context) {
+    const list = [];
+    const seen = new Set([answer.toLowerCase()]);
+    const add = (value, type) => {
+      if (typeof value !== 'string' || !/^[a-z]+$/i.test(value) || value.toLowerCase() === answer.toLowerCase() || seen.has(value.toLowerCase()) || !hasAllowedConsonantDoubles(value)) return;
+      if (type.startsWith('suffix-') && !type.endsWith('-doubling') && addsConsonantDouble(value, baseForm)) return;
+      seen.add(value.toLowerCase());
+      list.push({value, type, family:families[type] || 'other'});
+    };
+    const forms = context && Array.isArray(context.forms) ? context.forms : [];
+    const baseForm = forms[0] || answer;
+    forms.forEach(form => add(form, 'form-recycling'));
+    if (baseForm.length > 2) for (let i = 0; i < baseForm.length; i++) add(baseForm.slice(0,i) + baseForm.slice(i + 1), 'letter-missing');
+    for (let i = 0; i < answer.length; i++) {
+      if (i + 1 < answer.length && answer[i].toLowerCase() !== answer[i + 1].toLowerCase()) add(answer.slice(0,i) + answer[i + 1] + answer[i] + answer.slice(i + 2), 'letter-swap-adjacent');
+      for (let j = i + 2; j < answer.length; j++) if (answer[i].toLowerCase() !== answer[j].toLowerCase()) {
+        const chars = answer.split(''); [chars[i],chars[j]] = [chars[j],chars[i]];
+        add(chars.join(''), 'letter-swap-internal');
+      }
+    }
+    const lower = answer.toLowerCase();
+    for (const [from,to] of sounds) {
+      let start = 0, index;
+      while ((index = lower.indexOf(from,start)) !== -1) {
+        add(answer.slice(0,index) + caseLike(answer.slice(index,index + from.length),to) + answer.slice(index + from.length), 'sound-confusion');
+        start = index + 1;
+      }
+    }
+    for (const from of vowelPairs) {
+      let start = 0, index;
+      while ((index = lower.indexOf(from,start)) !== -1) {
+        for (const to of vowelPairs) if (to !== from) add(answer.slice(0,index) + caseLike(answer.slice(index,index + from.length),to) + answer.slice(index + from.length), 'sound-confusion');
+        start = index + 1;
+      }
+    }
+    for (const suffix of suffixes) {
+      const type = 'suffix-' + suffix + (['ed','en','ing','er'].includes(suffix) && shouldDouble(baseForm) ? '-doubling' : '');
+      add(appendSuffix(baseForm, suffix), type);
+    }
+    return list;
+  }
+  function shuffle(items, rng) {
+    for (let i = items.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [items[i],items[j]] = [items[j],items[i]]; }
+    return items;
+  }
+  function candidates(word, selected, context) { return makeCandidates(word, context || (selected && !selected.has ? selected : null)); }
+  const selectedTypes = () => new Set(Object.keys(families));
+  function base(word, count, selected, context, rng) {
+    const random = rng || Math.random;
+    const pool = shuffle(makeCandidates(word, context), random);
+    const chosen = [], usedValues = new Set([word.toLowerCase()]), usedFamilies = new Set(), usedTypes = new Set();
+    for (const family of ['form-pattern','verb-ending','letter-order','word-family','phonetic','letter-edit','other']) {
+      for (const item of pool) if (item.family === family && !usedFamilies.has(item.family) && !usedValues.has(item.value.toLowerCase())) {
+        chosen.push(item); usedValues.add(item.value.toLowerCase()); usedFamilies.add(item.family); usedTypes.add(item.type);
+        break;
+      }
+      if (chosen.length >= count) return chosen;
+    }
+    for (const item of pool) if (!usedTypes.has(item.type) && !usedValues.has(item.value.toLowerCase())) {
+      chosen.push(item); usedValues.add(item.value.toLowerCase()); usedTypes.add(item.type);
+      if (chosen.length >= count) return chosen;
+    }
+    for (const item of pool) if (!usedValues.has(item.value.toLowerCase())) {
+      chosen.push(item); usedValues.add(item.value.toLowerCase());
+      if (chosen.length >= count) break;
+    }
+    return chosen;
+  }
+  function createDistractorRecords(answer, validForms, count, rng, context) {
+    return base(answer, count, selectedTypes(), context, rng);
+  }
+  function createDistractors(answer, validForms, count, rng, context) {
+    return createDistractorRecords(answer, validForms, count, rng, context).map(item => item.value);
+  }
+  global.SpellingRules = Object.freeze({rules:Object.freeze(Object.keys(families).map(id => Object.freeze({id,family:families[id]}))), base, selectedTypes, candidates, hasAllowedConsonantDoubles, createDistractorRecords, createDistractors, suffixes:Object.freeze(suffixes.slice())});
+})(window);
+
+</script>
+  <script>
+// Framework-independent quiz logic. Keep browser rendering and Unity code out of this file.
+(function (global) {
+  function shuffle(items, rng) {
+    const result = items.slice();
+    for (let i = result.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(rng() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+  function validForms(bank) {
+    const words = [];
+    bank.forEach(function (verb) {
+      verb.forEach(function (word) { words.push(word.toLowerCase()); });
+    });
+    return Array.from(new Set(words));
+  }
+  function makeQuestion(verb, bank, spellingRules, rng, missingIndex, choiceCount) {
+    const correct = verb[missingIndex];
+    const distractorRecords = spellingRules.createDistractorRecords(correct, validForms(bank), choiceCount - 1, rng, {forms:verb,missingIndex:missingIndex});
+    const distractors = distractorRecords.map(function (item) { return item.value; });
+    const display = verb.map(function (form, index) { return index === missingIndex ? '______' : form; });
+    return Object.freeze({
+      verb: Object.freeze(verb.slice()),
+      missingIndex: missingIndex,
+      formType: ['base form', 'simple past', 'past participle'][missingIndex],
+      display: Object.freeze(display),
+      answer: correct,
+      distractorRules: Object.freeze(distractorRecords.map(function (item) { return Object.freeze({value:item.value,type:item.type,family:item.family}); })),
+      choices: Object.freeze(shuffle([correct].concat(distractors), rng))
+    });
+  }
+  function createSession(bank, spellingRules, questionCount, rng, choiceCount) {
+    const random = rng || Math.random;
+    const count = Math.max(1, Math.min(questionCount || 3, bank.length));
+    const verbs = shuffle(bank, random).slice(0, count);
+    const formOrder = shuffle([0, 1, 2], random);
+    return Object.freeze(verbs.map(function (verb, index) {
+      // Balanced mixed forms: each block of three questions tests every form once.
+      const missingIndex = formOrder[index % formOrder.length];
+      return makeQuestion(verb, bank, spellingRules, random, missingIndex, choiceCount || 6);
+    }));
+  }
+  global.VerbQuizCore = Object.freeze({ createSession: createSession });
+})(window);
+
+</script>
+  <script>
+(function () {
+  const SOLO_QUESTION_COUNT = 10;
+  const bank = window.VerbBanks.irregular;
+  const ui = {
+    welcome: document.getElementById('welcome'),
+    quiz: document.getElementById('quiz'),
+    results: document.getElementById('results'),
+    start: document.getElementById('start-button'),
+    restart: document.getElementById('restart-button'),
+    questionCount: document.getElementById('question-count'),
+    score: document.getElementById('score'),
+    progress: document.getElementById('progress-fill'),
+    timer: document.getElementById('timer'),
+    pattern: document.getElementById('word-pattern'),
+    choices: document.getElementById('choices'),
+    feedback: document.getElementById('feedback'),
+    next: document.getElementById('next-button'),
+    finalScore: document.getElementById('final-score'),
+    timeResults: document.getElementById('time-results'),
+    playerCountRow: document.getElementById('player-count-row'),
+    choiceCountRow: document.getElementById('choice-count-row'),
+    choiceCountDescription: document.getElementById('choice-count-description'),
+    roundNote: document.getElementById('round-note'),
+    progressTrack: document.getElementById('progress-track'),
+    shell: document.getElementById('app-shell')
+  };
+  const PLAYER_PALETTES = [
+    {accent:'#3de0c5',light:'#c8fff5',boid:'#00ffd5',border:'rgba(66,227,202,.68)',wash:'rgba(66,227,202,.18)',deep:'rgba(15,68,66,.58)',glow:'rgba(66,227,202,.12)'},
+    {accent:'#ff7183',light:'#ffe0e4',boid:'#ff294f',border:'rgba(255,113,131,.7)',wash:'rgba(255,113,131,.18)',deep:'rgba(78,32,47,.58)',glow:'rgba(255,113,131,.12)'},
+    {accent:'#a78bfa',light:'#e6ddff',boid:'#7540ff',border:'rgba(167,139,250,.72)',wash:'rgba(167,139,250,.19)',deep:'rgba(50,39,83,.6)',glow:'rgba(167,139,250,.13)'},
+    {accent:'#ffd166',light:'#fff0c2',boid:'#ffe000',border:'rgba(255,209,102,.72)',wash:'rgba(255,209,102,.18)',deep:'rgba(75,60,28,.58)',glow:'rgba(255,209,102,.12)'}
+  ];
+  let mode = 'solo';
+  let selectedPlayerCount = 2;
+  let selectedChoiceCount = 3;
+  let questions = [];
+  let index = 0;
+  let correctCount = 0;
+  let startedAt = 0;
+  let timerInterval = null;
+  let transitionTimeout = null;
+  let active = false;
+  let soloRecords = [];
+  let players = [];
+  let answeredThisQuestion = [];
+
+  function clearChildren(element) {
+    while (element.firstChild) element.removeChild(element.firstChild);
+  }
+  function show(section) {
+    ui.welcome.hidden = section !== 'welcome';
+    ui.quiz.hidden = section !== 'quiz';
+    ui.results.hidden = section !== 'results';
+  }
+  function formatTime(seconds) { return seconds.toFixed(2) + ' s'; }
+  function clearTimers() {
+    clearInterval(timerInterval);
+    clearTimeout(transitionTimeout);
+  }
+  const CHOICE_LEVEL_NAMES = {3:'Warm-up',4:'Easy',5:'Steady',6:'Tricky',7:'Hard',8:'Expert'};
+  function updateRoundNote() {
+    ui.roundNote.textContent = mode === 'solo'
+      ? '10 questions · ' + selectedChoiceCount + ' choices · Works offline'
+      : 'Challenge · 8–12 questions · ' + selectedChoiceCount + ' choices · ' + CHOICE_LEVEL_NAMES[selectedChoiceCount];
+  }
+  function setMode(nextMode) {
+    mode = nextMode;
+    ui.shell.classList.toggle('challenge-layout', mode === 'challenge');
+    document.querySelectorAll('.mode-button').forEach(function (button) {
+      button.classList.toggle('selected', button.dataset.mode === mode);
+    });
+    ui.playerCountRow.hidden = mode !== 'challenge';
+    ui.choiceCountRow.hidden = mode !== 'challenge';
+    ui.start.textContent = "Start Anson's Game";
+    updateRoundNote();
+  }
+  function setPlayerCount(count) {
+    selectedPlayerCount = count;
+    document.querySelectorAll('[data-count]').forEach(function (button) {
+      button.classList.toggle('selected', Number(button.dataset.count) === count);
+    });
+  }
+  function setChoiceCount(count) {
+    selectedChoiceCount = Math.max(3, Math.min(8, count));
+    document.querySelectorAll('[data-choice-count]').forEach(function (button) {
+      const selected = Number(button.dataset.choiceCount) === selectedChoiceCount;
+      button.classList.toggle('selected', selected);
+      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+    ui.choiceCountDescription.textContent = selectedChoiceCount + ' choices · ' + CHOICE_LEVEL_NAMES[selectedChoiceCount];
+    updateRoundNote();
+  }
+  function start() {
+    clearTimers();
+    const questionCount = mode === 'challenge' ? 8 + Math.floor(Math.random() * 5) : SOLO_QUESTION_COUNT;
+    const effectiveChoiceCount = selectedChoiceCount;
+    questions = VerbQuizCore.createSession(bank, SpellingRules, questionCount, undefined, effectiveChoiceCount);
+    index = 0;
+    correctCount = 0;
+    soloRecords = [];
+    players = mode === 'challenge' ? Array.from({ length: selectedPlayerCount }, function (_, i) {
+      return { name: 'Player ' + (i + 1), points: 0, color: PLAYER_PALETTES[i], correctTimes: [], correctVerbs: [] };
+    }) : [];
+    ui.progressTrack.hidden = mode === 'challenge';
+    show('quiz');
+    renderQuestion();
+    // Decoration resets for each new game, not for each new question.
+    if (window.ansonBoids) window.ansonBoids.reset();
+  }
+  function setWordPattern(question) {
+    clearChildren(ui.pattern);
+    question.display.forEach(function (part, partIndex) {
+      const span = document.createElement('span');
+      span.textContent = part;
+      if (partIndex === 2) span.className = 'blank';
+      ui.pattern.appendChild(span);
+    });
+  }
+  function startClock() {
+    window.requestAnimationFrame(function () {
+      startedAt = performance.now();
+      clearInterval(timerInterval);
+    });
+  }
+  function renderQuestion() {
+    const question = questions[index];
+    active = true;
+    answeredThisQuestion = players.map(function () { return false; });
+    ui.questionCount.textContent = mode === 'challenge'
+      ? 'Question ' + (index + 1)
+      : 'Question ' + (index + 1) + ' of ' + questions.length;
+    ui.score.textContent = mode === 'solo' ? 'Correct: ' + correctCount : 'Challenge · first correct answer scores';
+    ui.progress.style.width = ((index / questions.length) * 100) + '%';
+    setWordPattern(question);
+    clearChildren(ui.choices);
+    ui.choices.className = mode === 'solo' ? 'choices' : 'choices challenge-grid players-' + players.length;
+    ui.feedback.textContent = '';
+    ui.feedback.className = 'feedback';
+    ui.next.hidden = true;
+
+    if (mode === 'solo') renderSoloChoices(question);
+    else renderChallengeAreas(question);
+    startClock();
+  }
+  function renderSoloChoices(question) {
+    question.choices.forEach(function (choice) {
+      const button = makeChoiceButton(choice);
+      button.addEventListener('click', function () { answerSolo(choice, button); });
+      ui.choices.appendChild(button);
+    });
+  }
+  function renderChallengeAreas(question) {
+    players.forEach(function (player, playerIndex) {
+      const area = document.createElement('section');
+      area.className = 'player-area';
+      area.setAttribute('aria-label', player.name + ' answer area');
+      area.style.setProperty('--player-accent', player.color.accent);
+      area.style.setProperty('--player-light', player.color.light);
+      area.style.setProperty('--player-border', player.color.border);
+      area.style.setProperty('--player-wash', player.color.wash);
+      area.style.setProperty('--player-deep', player.color.deep);
+      area.style.setProperty('--player-glow', player.color.glow);
+      const title = document.createElement('h3');
+      title.className = 'player-title';
+      title.textContent = player.name;
+      const score = document.createElement('p');
+      score.className = 'player-score';
+      score.textContent = player.points + (player.points === 1 ? ' point' : ' points');
+      const buttonList = document.createElement('div');
+      buttonList.className = 'player-choices';
+      question.choices.forEach(function (choice) {
+        const button = makeChoiceButton(choice);
+        button.addEventListener('click', function () { answerChallenge(playerIndex, choice, button); });
+        buttonList.appendChild(button);
+      });
+      area.append(title, score, buttonList);
+      ui.choices.appendChild(area);
+    });
+  }
+  function makeChoiceButton(choice) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'choice';
+    button.textContent = choice;
+    return button;
+  }
+  function answerSolo(choice, clickedButton) {
+    if (!active) return;
+    active = false;
+    clearInterval(timerInterval);
+    const elapsed = (performance.now() - startedAt) / 1000;
+    const correct = choice === questions[index].answer;
+    if (window.ansonBoids) window.ansonBoids.onAnswer(elapsed, correct);
+    Array.from(ui.choices.children).forEach(function (button) {
+      button.disabled = true;
+      if (button.textContent === questions[index].answer) button.classList.add('correct');
+    });
+    if (correct) {
+      correctCount += 1;
+      if (window.ansonBoids) window.ansonBoids.releasePlayerSalvo();
+      soloRecords[index] = { correct: true, answerTimeSeconds: elapsed, verb: questions[index].verb[0] };
+      clickedButton.classList.add('correct');
+      ui.feedback.textContent = 'Correct! ' + formatTime(elapsed) + ' recorded.';
+      ui.feedback.classList.add('good');
+    } else {
+      soloRecords[index] = { correct: false, answerTimeSeconds: null, verb: questions[index].verb[0] };
+      clickedButton.classList.add('incorrect');
+      ui.feedback.textContent = 'Not quite. The correct form is “' + questions[index].answer + '”.';
+      ui.feedback.classList.add('bad');
+    }
+    ui.score.textContent = 'Correct: ' + correctCount;
+    advanceAfter(650);
+  }
+  function answerChallenge(playerIndex, choice, clickedButton) {
+    if (!active || answeredThisQuestion[playerIndex]) return;
+    answeredThisQuestion[playerIndex] = true;
+    const elapsed = (performance.now() - startedAt) / 1000;
+    const isCorrect = choice === questions[index].answer;
+    const area = clickedButton.closest('.player-area');
+    Array.from(area.querySelectorAll('.choice')).forEach(function (button) { button.disabled = true; });
+    clickedButton.classList.add('selected-orange');
+
+    if (isCorrect) {
+      active = false;
+      clearInterval(timerInterval);
+      players[playerIndex].points += 1;
+      if (window.challengeBoids?.award) window.challengeBoids.award(playerIndex, players[playerIndex].color.boid, 10);
+      players[playerIndex].correctTimes.push(elapsed);
+      players[playerIndex].correctVerbs.push(questions[index].verb[0]);
+      ui.feedback.textContent = players[playerIndex].name + ' got it! +10 boids. Moving to the next question.';
+      ui.feedback.classList.add('good');
+      disableAllChallengeChoices();
+      updateChallengePlayerScores();
+      advanceAfter(350);
+      return;
+    }
+
+    ui.feedback.textContent = players[playerIndex].name + ' used their answer for this question.';
+    ui.feedback.classList.add('bad');
+    if (answeredThisQuestion.every(Boolean)) {
+      active = false;
+      clearInterval(timerInterval);
+      ui.feedback.textContent = 'No correct answers. The answer was “' + questions[index].answer + '”.';
+      advanceAfter(650);
+    }
+  }
+  function disableAllChallengeChoices() {
+    ui.choices.querySelectorAll('.choice').forEach(function (button) { button.disabled = true; });
+  }
+  function updateChallengePlayerScores() {
+    ui.choices.querySelectorAll('.player-area').forEach(function (area, i) {
+      const label = area.querySelector('.player-score');
+      label.textContent = players[i].points + (players[i].points === 1 ? ' point' : ' points');
+    });
+  }
+  function advanceAfter(delay) {
+    transitionTimeout = window.setTimeout(function () {
+      index += 1;
+      if (index >= questions.length) finish();
+      else renderQuestion();
+    }, delay);
+  }
+  function finish() {
+    clearTimers();
+    active = false;
+    show('results');
+    ui.restart.textContent = "Play Anson's Game again";
+    ui.progress.style.width = '100%';
+    clearChildren(ui.timeResults);
+    if (mode === 'solo') finishSolo();
+    else finishChallenge();
+  }
+  function finishSolo() {
+    ui.finalScore.textContent = correctCount + ' out of ' + questions.length + ' correct';
+    soloRecords.forEach(function (record, i) {
+      const row = document.createElement('div');
+      row.className = 'time-row';
+      const label = document.createElement('span');
+      label.textContent = 'Question ' + (i + 1) + ' · ' + record.verb;
+      const value = document.createElement('strong');
+      value.textContent = record.correct ? formatTime(record.answerTimeSeconds) : 'No time saved';
+      row.append(label, value);
+      ui.timeResults.appendChild(row);
+    });
+  }
+  function finishChallenge() {
+    const maxPoints = Math.max.apply(null, players.map(function (player) { return player.points; }));
+    let leaders = players.filter(function (player) { return player.points === maxPoints; });
+    if (leaders.length > 1) {
+      const fastestTotal = Math.min.apply(null, leaders.map(function (player) {
+        return player.correctTimes.reduce(function (sum, time) { return sum + time; }, 0);
+      }));
+      leaders = leaders.filter(function (player) {
+        const total = player.correctTimes.reduce(function (sum, time) { return sum + time; }, 0);
+        return Math.abs(total - fastestTotal) < 0.000001;
+      });
+    }
+    const winnerText = leaders.length === players.length && maxPoints === 0
+      ? 'No points scored.'
+      : leaders.length === 1 ? leaders[0].name + ' wins!' : 'It is a tie!';
+    ui.finalScore.textContent = winnerText;
+    players.forEach(function (player) {
+      const totalTime = player.correctTimes.reduce(function (sum, time) { return sum + time; }, 0);
+      const row = document.createElement('div');
+      row.className = 'time-row challenge-result-row';
+      const label = document.createElement('span');
+      label.textContent = player.name + (leaders.includes(player) && maxPoints > 0 ? ' 🏆' : '');
+      const value = document.createElement('strong');
+      value.textContent = player.points + (player.points === 1 ? ' point' : ' points') + (player.correctTimes.length ? ' · ' + formatTime(totalTime) : '');
+      row.append(label, value);
+      ui.timeResults.appendChild(row);
+    });
+    const note = document.createElement('p');
+    note.className = 'small-note results-note';
+    note.textContent = selectedChoiceCount + ' choices · Tied scores are decided by the lowest total time on correct answers.';
+    ui.timeResults.appendChild(note);
+  }
+
+  document.querySelectorAll('.mode-button').forEach(function (button) {
+    button.addEventListener('click', function () { setMode(button.dataset.mode); });
+  });
+  document.querySelectorAll('[data-count]').forEach(function (button) {
+    if(button.dataset.count)button.addEventListener('click', function () { setPlayerCount(Number(button.dataset.count)); });
+  });
+  document.querySelectorAll('[data-choice-count]').forEach(function (button) {
+    button.addEventListener('click', function () { setChoiceCount(Number(button.dataset.choiceCount)); });
+  });
+  ui.start.addEventListener('click', start);
+  ui.restart.addEventListener('click', function () {
+    start();
+  });
+})();
+
+</script>
+  <script>window.CHALLENGE_BOIDS_CONFIG = {testing: false};</script>
+  <script>
+/* Anson's Game boid duel. Player answers release a salvo; timed enemy waves arrive from the far edge. */
+(function () {
+  'use strict';
+  const quiz = document.getElementById('quiz');
+  const timer = document.getElementById('timer');
+  const modeSelect = document.getElementById('enemy-timing-mode');
+  const intervalInput = document.getElementById('enemy-interval');
+  const intervalValue = document.getElementById('enemy-interval-value');
+  const intervalSetting = document.getElementById('enemy-interval-setting');
+  const waveSizeSelect = document.getElementById('enemy-wave-size');
+  const label = document.getElementById('enemy-timer-label');
+  if (!quiz || !timer) return;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const norm=(x,y)=>{const d=Math.hypot(x,y)||1;return{x:x/d,y:y/d};};
+  const TAU=Math.PI*2, HIT_R=12, PLAYER_COLOR='#28f3d1', ENEMY_COLOR='#ff4b65';
+  let canvas,ctx,W=0,H=0,dpr=1,raf=0,last=0,boids=[],roundOn=false,nextWaveAt=0,collisions=0;
+  let clockMode='fixed',intervalSeconds=20,waveSize=2,displayLast=999;
+  function readSettings(){
+    clockMode=modeSelect.value;
+    intervalSeconds=Number(intervalInput.value)||20;
+    waveSize=Number(waveSizeSelect.value)||2;
+    intervalSetting.hidden=clockMode==='after-answer';
+    intervalValue.textContent=intervalSeconds+' s';
+  }
+  modeSelect.addEventListener('change',readSettings);
+  intervalInput.addEventListener('input',readSettings);
+  waveSizeSelect.addEventListener('change',readSettings);
+  readSettings();
+  quiz.classList.add('boid-stage');
+  canvas=document.createElement('canvas');canvas.className='boid-overlay';canvas.setAttribute('aria-hidden','true');quiz.appendChild(canvas);
+  ctx=canvas.getContext('2d');if(!ctx)return;
+  function resize(){
+    W=quiz.clientWidth;H=quiz.clientHeight;dpr=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function createBoid(team,x,y,vx,vy){return{x,y,vx,vy,team,hp:3,hitAt:0};}
+  function releasePlayerSalvo(){
+    if(!W||!H)resize();
+    // Ten boids preserve the previous challenge's familiar reward, released together from the child's side.
+    for(let i=0;i<10;i++){
+      const x=W*.5+rnd(-22,22),y=H*.79+rnd(-12,12),a=rnd(-Math.PI*.82,-Math.PI*.18),s=rnd(1.4,2.2);
+      boids.push(createBoid(0,x,y,Math.cos(a)*s,Math.sin(a)*s));
+    }
+  }
+  function spawnEnemyWave(){
+    if(!W||!H)resize();
+    // Enemies enter from spaced points along the far/top edge, facing the child's side.
+    for(let i=0;i<waveSize;i++){
+      const spread=(i-(waveSize-1)/2)*Math.min(50,W/(waveSize+1));
+      const x=clamp(W*.5+spread+rnd(-12,12),16,W-16),y=18+rnd(0,16),a=rnd(Math.PI*.18,Math.PI*.82),s=rnd(1.1,1.9);
+      boids.push(createBoid(1,x,y,Math.cos(a)*s,Math.sin(a)*s));
+    }
+  }
+  function reset(){
+    boids=[];collisions=0;roundOn=true;readSettings();
+    nextWaveAt=clockMode==='after-answer'?Infinity:performance.now()+(clockMode==='adaptive'?12000:intervalSeconds*1000);
+    displayLast=999;updateClock(performance.now());
+  }
+  function onAnswer(seconds){
+    if(!roundOn)return;
+    if(clockMode==='after-answer')nextWaveAt=performance.now()+1000;
+    else if(clockMode==='adaptive')nextWaveAt=performance.now()+clamp(seconds*1500,8000,30000);
+  }
+  function updateClock(now){
+    if(!roundOn||quiz.hidden)return;
+    if(!Number.isFinite(nextWaveAt)){
+      if(displayLast!==-1){displayLast=-1;timer.textContent='—';label.textContent='Enemy wave after your answer';}
+      return;
+    }
+    const remaining=Math.max(0,(nextWaveAt-now)/1000),shown=Math.ceil(remaining);
+    if(shown!==displayLast){
+      displayLast=shown;timer.textContent=String(shown);
+      label.textContent=clockMode==='after-answer'?'Enemy wave after your answer':clockMode==='adaptive'?'Next adaptive wave':'Next enemy wave';
+    }
+    if(now>=nextWaveAt){spawnEnemyWave();nextWaveAt=clockMode==='fixed'?now+intervalSeconds*1000:Infinity;displayLast=999;}
+  }
+  function tick(now){
+    raf=requestAnimationFrame(tick);
+    if(!quiz.hidden&&quiz.getClientRects().length){
+      if(!W||Math.abs(W-quiz.clientWidth)>1||Math.abs(H-quiz.clientHeight)>1)resize();
+      if(roundOn)updateClock(now);
+      const dt=clamp((now-last)/16.67,.3,1.8);last=now;
+      moveBoids(dt,now);collide(now);draw();
+    }else{last=now;}
+  }
+  function moveBoids(dt,now){
+    for(const b of boids){
+      let target=null,td=Infinity,ax=0,ay=0,sepX=0,sepY=0,n=0;
+      for(const o of boids){if(o===b)continue;const dx=o.x-b.x,dy=o.y-b.y,d2=dx*dx+dy*dy;
+        if(o.team!==b.team&&d2<td){target=o;td=d2;}
+        if(o.team===b.team&&d2<70*70&&d2>1){sepX-=dx/d2;sepY-=dy/d2;n++;}
+      }
+      if(target){const aim=norm(target.x-b.x,target.y-b.y);ax+=aim.x*.065;ay+=aim.y*.065;}
+      if(n){const away=norm(sepX/n,sepY/n);ax+=away.x*.035;ay+=away.y*.035;}
+      b.vx+=ax*dt;b.vy+=ay*dt;
+      const speed=Math.hypot(b.vx,b.vy)||1,max=b.team===0?2.8:2.55;
+      if(speed>max){b.vx=b.vx/speed*max;b.vy=b.vy/speed*max;}
+      b.x+=b.vx*dt;b.y+=b.vy*dt;
+      if(b.x<8||b.x>W-8){b.x=clamp(b.x,8,W-8);b.vx*=-.82;}
+      if(b.y<8||b.y>H-8){b.y=clamp(b.y,8,H-8);b.vy*=-.82;}
+      if(b.hitAt<now)b.hitAt=now;
+    }
+  }
+  function collide(now){
+    const dead=new Set();
+    for(let i=0;i<boids.length;i++)for(let j=i+1;j<boids.length;j++){
+      const a=boids[i],b=boids[j];if(a.team===b.team)continue;
+      let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d>=HIT_R*2)continue;
+      const u=norm(dx,dy);if(d<.01){dx=rnd(-1,1);dy=rnd(-1,1);d=Math.hypot(dx,dy);u.x=dx/d;u.y=dy/d;}
+      // Separate on contact and kick both away. A short per-boid cooldown makes hits readable instead of instant.
+      const overlap=HIT_R*2-d,shove=overlap*.52+.6;
+      a.x-=u.x*shove;a.y-=u.y*shove;b.x+=u.x*shove;b.y+=u.y*shove;
+      const rel=(a.vx-b.vx)*u.x+(a.vy-b.vy)*u.y;
+      a.vx-=u.x*rel*.72+u.x*1.15;a.vy-=u.y*rel*.72+u.y*1.15;
+      b.vx+=u.x*rel*.72+u.x*1.15;b.vy+=u.y*rel*.72+u.y*1.15;
+      if(now>=a.hitAt&&now>=b.hitAt){a.hp--;b.hp--;a.hitAt=b.hitAt=now+520;collisions++;if(a.hp<=0)dead.add(a);if(b.hp<=0)dead.add(b);}
+    }
+    if(dead.size)boids=boids.filter(b=>!dead.has(b));
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(const b of boids){
+      ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
+      ctx.shadowColor=b.team===0?PLAYER_COLOR:ENEMY_COLOR;ctx.shadowBlur=7;
+      ctx.fillStyle=b.team===0?PLAYER_COLOR:ENEMY_COLOR;
+      ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(-6,-5);ctx.lineTo(-3,0);ctx.lineTo(-6,5);ctx.closePath();ctx.fill();
+      ctx.shadowBlur=0;ctx.fillStyle='rgba(4,16,24,.88)';
+      for(let hp=0;hp<3;hp++){ctx.beginPath();ctx.arc(-4+hp*3.2,0,.8,0,TAU);ctx.fillStyle=hp<b.hp?'#fff':'rgba(255,255,255,.2)';ctx.fill();}
+      ctx.restore();
+    }
+  }
+  window.addEventListener('resize',resize);
+  window.ansonBoids={reset,releasePlayerSalvo,onAnswer,stats:()=>({boids:boids.length,collisions,players:boids.filter(b=>b.team===0).length,enemies:boids.filter(b=>b.team===1).length})};
+  resize();raf=requestAnimationFrame(tick);
+})();
+
+</script>
+</body>
+</html>
