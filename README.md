@@ -11,6 +11,10 @@ GitHub's repository file view shows HTML source code. Once GitHub Pages is enabl
 
 These builds run in a browser. The solo preview is a static practice build. Online solo scores and the leaderboard use the Google Apps Script project in [`apps-script/`](apps-script/README.md).
 
+## Anson's Game
+
+The separate [Anson's Game standalone build](challenge/usb/ansons-game.html) is a one-player educational version for an adult to read aloud. It starts with 3 answer choices and allows 3–8, releases a group of player boids on a correct answer, and offers fixed, answer-linked, and adaptive enemy-wave timing. Enemy waves enter from the far side; boids have three hit points and bounce apart when they collide. For USB testing, open the file page on GitHub and choose **Download raw file**. For a browser preview, use [Anson's Game on GitHub Pages](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game.html) after Pages has published the latest commit.
+
 ## USB testing
 
 For the current answer-choice test, use [the experimental standalone build](challenge/usb/verb-challenge-choice-test.html). It supports 2–4 players, 3–8 choices (default 3), and hidden random rounds of 8–12 questions. Open its file page on GitHub and choose **Download raw file**, then copy the HTML file to the USB drive.
