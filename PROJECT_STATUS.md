@@ -23,9 +23,13 @@ Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/ver
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Multiplayer challenge build; each round randomly has 8–12 questions, and players do not see how many remain. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | Bundled one-file challenge for USB/offline testing on larger touchscreens. |
 | Choice test (experimental) | `challenge/usb/verb-challenge-choice-test.html` | Standalone classroom test with selectable answer-count difficulty; other builds remain unchanged. |
-| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | One-player read-aloud build with 3–8 choices, configurable enemy timing, and three-hit boid battles. |
+| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | One-player read-aloud build with 3–8 choices, large answer timer, hidden 1–7 second enemy-wave timing, and up to 10 enemy boids per wave. |
 
 Online single-player scores are handled separately by the Google Apps Script source in `apps-script/`, with results stored in Google Sheets. GitHub Pages hosts static HTML; it does not run the Apps Script backend.
+
+### Anson's Game prototype
+
+The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Fixed enemy waves can arrive every 1–7 seconds (default 4), with a selectable wave size from 2 to 10 (default 10, the same as the player's salvo). Other timing experiments remain available: one second after each answer, or adaptive timing using the answer duration, clamped to 1–7 seconds. The answer-to-wave timing modes and 10-question, 3–8-choice solo format remain isolated in this experimental standalone file. Test the wave density and 3-HP collisions on classroom touchscreens before changing the regular Challenge modes.
 
 ## Decisions to preserve
 
