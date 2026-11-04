@@ -1,6 +1,6 @@
 # Project handover
 
-**Last updated:** 2 November 2026  
+**Last updated:** 4 November 2026  
 **Purpose:** Quickly restore context after a break. Read this and [BUILD_MODES.md](BUILD_MODES.md) before making project changes.
 
 ## Why this project exists
@@ -23,15 +23,15 @@ Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/ver
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Multiplayer challenge build; each round randomly has 8–12 questions, and players do not see how many remain. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | Bundled one-file challenge for USB/offline testing on larger touchscreens. |
 | Choice test (experimental) | `challenge/usb/verb-challenge-choice-test.html` | Standalone classroom test with selectable answer-count difficulty; other builds remain unchanged. |
-| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | Verbs and a 60-sentence Passive/Present Perfect mode, choice-scaled boid rewards, matching enemy waves, and 4–6 second delay. |
+| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | Verbs, 10-sentence Story Time stories, and general questions; persistent timed enemy waves and three-hit boid battles. |
 
 Online single-player scores are handled separately by the Google Apps Script source in `apps-script/`, with results stored in Google Sheets. GitHub Pages hosts static HTML; it does not run the Apps Script backend.
 
 ### Anson's Game prototype
 
-The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Each question schedules one enemy wave after it appears. The delay is 4–6 seconds for Verbs (default 4) and 4–9 seconds for Choice 2 (default 6). Both the player's correct-answer salvo and that question's enemy wave use `question number + (answer choices − 3)`. The adult can set an enemy cap from 10 to 100 (default 40). Active enemy count is also balanced to Anson's flock, so it stays at 10 or fewer until he has more than 10 active boids; waves that do not fit are skipped. The enlarged boid arena sits below the question and answer controls. A correct answer immediately releases the player's salvo; enemy boids have three hit points and opposing collisions knock them apart.
+The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Each question keeps its own enemy wave scheduled from when it appears, so moving to the next question does not cancel earlier waves. The delay is 4–6 seconds for Verbs (default 4) and 4–9 seconds for Story Time and General Questions (default 6). Both the player's correct-answer salvo and that question's enemy wave use `question number + (answer choices − 3)`. The adult can set an enemy cap from 10 to 100 (default 40). Active enemy count is also balanced to Anson's flock, so it stays at 10 or fewer until he has more than 10 active boids; waves that do not fit are skipped. The enlarged boid arena sits below the question and answer controls. A correct answer immediately releases the player's salvo; enemy boids have three hit points and opposing collisions knock them apart.
 
-Choice 2 is a ready-to-play offline sentence mode with 60 easy prompts: 30 passive voice and 30 present perfect sentences. Each 10-question round mixes five of each type, with no repeats until the full pool is used. Choices are spelling-mistake varieties of the target past participle, using the same spelling rules as Verbs. The New game button returns to the initial setup screen; Verbs and Sentences (Choice 2) are playable, while Choice 3 remains a labeled placeholder until its content is defined.
+Story Time has six simple offline stories with 10 missing-word sentences each. A round plays one complete story, and stories do not repeat until all six have been used. Its choices are spelling-mistake varieties of the target past participle, using the same spelling rules as Verbs. General Questions has 51 simple offline questions in the same missing-word format; its choices are real words, not spelling mistakes. The New game button returns to the initial setup screen, where all three game types and settings can be chosen.
 
 ## Decisions to preserve
 
