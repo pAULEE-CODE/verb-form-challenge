@@ -87,6 +87,12 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
 .difficulty-button.selected { color:var(--level); border-color:var(--level); background:rgba(94,142,159,.22); box-shadow:0 0 0 2px color-mix(in srgb,var(--level) 30%,transparent); }
 .difficulty-button:focus-visible { outline:3px solid #fff; outline-offset:3px; }
 .choice-count-description { margin:0; font-size:.82rem; color:var(--muted); font-weight:500; }
+.game-type-row { display:grid; justify-items:center; gap:9px; margin:16px auto 20px; color:var(--muted); font-weight:750; }
+.game-type-selector { display:flex; flex-wrap:wrap; justify-content:center; gap:9px; }
+.game-type-button { min-width:120px; min-height:52px; padding:10px 18px; border:1px solid #426176; border-radius:11px; background:#1c3446; color:var(--muted); cursor:pointer; font-weight:850; }
+.game-type-button.selected { color:var(--cyan); border-color:var(--cyan); background:var(--cyan-dark); box-shadow:inset 0 0 0 1px rgba(101,217,231,.18); }
+.game-type-button:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+.button:disabled { opacity:.45; cursor:not-allowed; transform:none; filter:none; }
 .count-button { min-width: 42px; padding: 8px 11px; }
 .challenge-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
 .challenge-grid.players-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -187,6 +193,15 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       <div class="welcome-mark" aria-hidden="true">A</div>
       <h2 id="welcome-title">Ready to listen and choose?</h2>
       <p>An adult reads each question aloud. Choose the missing word to release your boids.</p>
+      <div class="game-type-row">
+        <span class="game-type-label">Game type</span>
+        <div class="game-type-selector" role="group" aria-label="Choose game type">
+          <button class="game-type-button selected" data-game-type="verbs" type="button" aria-pressed="true">Verbs</button>
+          <button class="game-type-button" data-game-type="choice2" type="button" aria-pressed="false">Choice 2</button>
+          <button class="game-type-button" data-game-type="choice3" type="button" aria-pressed="false">Choice 3</button>
+        </div>
+        <p id="game-type-note" class="choice-count-description">Verbs is ready to play. Choice 2 and Choice 3 are placeholders for future game types.</p>
+      </div>
       <div id="player-count-row" class="player-count-row" hidden>
         <span>Players</span>
         <div class="player-count-selector" role="group" aria-label="Number of players">
@@ -206,6 +221,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
           <button class="difficulty-button level-8" data-choice-count="8" type="button" aria-pressed="false"><strong>8 choices</strong><span>Expert</span></button>
         </div>
         <p id="choice-count-description" class="choice-count-description">3 choices · Warm-up</p>
+        <p class="choice-count-description">More answer choices add boids to the question's reward; each enemy wave matches it.</p>
       </div>
       <section class="enemy-settings" aria-label="Enemy boid settings">
         <h3>Enemy boid release</h3>
@@ -215,16 +231,6 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
               <option value="4" selected>4 seconds · default</option>
               <option value="5">5 seconds</option>
               <option value="6">6 seconds</option>
-            </select>
-          </label>
-          <label for="enemy-wave-size">Enemy boids per release
-            <select id="enemy-wave-size">
-              <option value="1">1 boid</option>
-              <option value="2">2 boids</option>
-              <option value="4">4 boids</option>
-              <option value="6">6 boids</option>
-              <option value="8">8 boids</option>
-              <option value="10" selected>10 boids</option>
             </select>
           </label>
           <label for="enemy-limit">Maximum enemy boids
@@ -603,6 +609,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   let mode = 'solo';
   let selectedPlayerCount = 2;
   let selectedChoiceCount = 3;
+  let selectedGameType = 'verbs';
   let questions = [];
   let index = 0;
   let correctCount = 0;
@@ -629,9 +636,24 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   }
   const CHOICE_LEVEL_NAMES = {3:'Warm-up',4:'Easy',5:'Steady',6:'Tricky',7:'Hard',8:'Expert'};
   function updateRoundNote() {
+    if (selectedGameType !== 'verbs') {
+      ui.roundNote.textContent = selectedGameType === 'choice2' ? 'Choice 2 is a placeholder. Verbs is the playable game type for now.' : 'Choice 3 is a placeholder. Verbs is the playable game type for now.';
+      return;
+    }
     ui.roundNote.textContent = mode === 'solo'
       ? '10 questions · ' + selectedChoiceCount + ' choices · Works offline'
       : 'Challenge · 8–12 questions · ' + selectedChoiceCount + ' choices · ' + CHOICE_LEVEL_NAMES[selectedChoiceCount];
+  }
+  function setGameType(type) {
+    selectedGameType = type;
+    document.querySelectorAll('[data-game-type]').forEach(function (button) {
+      const selected = button.dataset.gameType === type;
+      button.classList.toggle('selected', selected);
+      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+    ui.start.disabled = type !== 'verbs';
+    ui.start.textContent = type === 'verbs' ? "Start Anson's Game" : type === 'choice2' ? 'Choice 2 is not ready yet' : 'Choice 3 is not ready yet';
+    updateRoundNote();
   }
   function setMode(nextMode) {
     mode = nextMode;
@@ -652,7 +674,10 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   }
   function setChoiceCount(count) {
     selectedChoiceCount = Math.max(3, Math.min(8, count));
-    document.querySelectorAll('[data-choice-count]').forEach(function (button) {
+    document.querySelectorAll('[data-game-type]').forEach(function (button) {
+    button.addEventListener('click', function () { setGameType(button.dataset.gameType); });
+  });
+  document.querySelectorAll('[data-choice-count]').forEach(function (button) {
       const selected = Number(button.dataset.choiceCount) === selectedChoiceCount;
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', selected ? 'true' : 'false');
@@ -661,6 +686,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     updateRoundNote();
   }
   function start() {
+    if (selectedGameType !== 'verbs') return;
     clearTimers();
     const questionCount = mode === 'challenge' ? 8 + Math.floor(Math.random() * 5) : SOLO_QUESTION_COUNT;
     const effectiveChoiceCount = selectedChoiceCount;
@@ -695,6 +721,10 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       }, 100);
     });
   }
+  function boidsForCurrentQuestion() {
+    // Q1 starts at one boid; every extra answer choice adds one to that question's value.
+    return index + selectedChoiceCount - 2;
+  }
   function renderQuestion() {
     const question = questions[index];
     active = true;
@@ -714,7 +744,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     if (mode === 'solo') renderSoloChoices(question);
     else renderChallengeAreas(question);
     startClock();
-    if (window.ansonBoids) window.ansonBoids.questionStarted();
+    if (window.ansonBoids) window.ansonBoids.questionStarted(boidsForCurrentQuestion());
   }
   function renderSoloChoices(question) {
     question.choices.forEach(function (choice) {
@@ -770,10 +800,11 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     });
     if (correct) {
       correctCount += 1;
-      if (window.ansonBoids) window.ansonBoids.releasePlayerSalvo(index + 1);
+      if (window.ansonBoids) window.ansonBoids.releasePlayerSalvo(boidsForCurrentQuestion());
       soloRecords[index] = { correct: true, answerTimeSeconds: elapsed, verb: questions[index].verb[0] };
       clickedButton.classList.add('correct');
-      ui.feedback.textContent = 'Correct! +' + (index + 1) + ' ' + ((index + 1) === 1 ? 'boid' : 'boids') + '. ' + formatTime(elapsed) + ' recorded.';
+      const reward = boidsForCurrentQuestion();
+      ui.feedback.textContent = 'Correct! +' + reward + ' ' + (reward === 1 ? 'boid' : 'boids') + '. ' + formatTime(elapsed) + ' recorded.';
       ui.feedback.classList.add('good');
     } else {
       soloRecords[index] = { correct: false, answerTimeSeconds: null, verb: questions[index].verb[0] };
@@ -914,7 +945,6 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   const arena = document.getElementById('boid-arena');
   const timer = document.getElementById('timer');
   const delaySelect = document.getElementById('enemy-delay');
-  const waveSizeSelect = document.getElementById('enemy-wave-size');
   const enemyLimitSelect = document.getElementById('enemy-limit');
   if (!quiz || !arena || !timer) return;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -922,14 +952,12 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   const norm=(x,y)=>{const d=Math.hypot(x,y)||1;return{x:x/d,y:y/d};};
   const TAU=Math.PI*2, HIT_R=12, PLAYER_COLOR='#28f3d1', ENEMY_COLOR='#ff4b65';
   let canvas,ctx,W=0,H=0,dpr=1,raf=0,last=0,boids=[],roundOn=false,nextWaveAt=0,collisions=0;
-  let delaySeconds=4,waveSize=10,maxEnemyBoids=40;
+  let delaySeconds=4,scheduledWaveSize=1,maxEnemyBoids=40;
   function readSettings(){
     delaySeconds=Number(delaySelect.value)||4;
-    waveSize=Number(waveSizeSelect.value)||10;
     maxEnemyBoids=Number(enemyLimitSelect.value)||40;
   }
   delaySelect.addEventListener('change',readSettings);
-  waveSizeSelect.addEventListener('change',readSettings);
   enemyLimitSelect.addEventListener('change',readSettings);
   readSettings();
   arena.classList.add('boid-stage');
@@ -949,13 +977,14 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       boids.push(createBoid(0,x,y,Math.cos(a)*s,Math.sin(a)*s));
     }
   }
-  function spawnEnemyWave(){
+  function spawnEnemyWave(count){
     if(!W||!H)resize();
-    // Enemies enter from spaced points along the far/top edge, facing the child's side.
-    // Respect the selected active-enemy limit as well as a safe total-field ceiling.
-    let activeEnemies=boids.reduce((count,b)=>count+(b.team===1?1:0),0);
-    for(let i=0;i<waveSize&&activeEnemies<maxEnemyBoids&&boids.length<240;i++,activeEnemies++){
-      const spread=(i-(waveSize-1)/2)*Math.min(50,W/(waveSize+1));
+    // Enemies enter in the same number as the player's salvo for this question.
+    // Skip a wave if it would cross the chosen active-enemy cap.
+    const activeEnemies=boids.reduce((total,b)=>total+(b.team===1?1:0),0);
+    if(activeEnemies+count>maxEnemyBoids||boids.length+count>240)return;
+    for(let i=0;i<count;i++){
+      const spread=(i-(count-1)/2)*Math.min(50,W/(count+1));
       const x=clamp(W*.5+spread+rnd(-12,12),16,W-16),y=18+rnd(0,16),a=rnd(Math.PI*.18,Math.PI*.82),s=rnd(1.1,1.9);
       boids.push(createBoid(1,x,y,Math.cos(a)*s,Math.sin(a)*s));
     }
@@ -963,13 +992,13 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   function reset(){
     boids=[];collisions=0;roundOn=true;readSettings();nextWaveAt=Infinity;
   }
-  function questionStarted(){
-    if(roundOn)nextWaveAt=performance.now()+delaySeconds*1000;
+  function questionStarted(waveSize){
+    if(roundOn){scheduledWaveSize=waveSize;nextWaveAt=performance.now()+delaySeconds*1000;}
   }
   function updateClock(now){
     if(!roundOn||quiz.hidden||!Number.isFinite(nextWaveAt))return;
     if(now>=nextWaveAt){
-      spawnEnemyWave();
+      spawnEnemyWave(scheduledWaveSize);
       nextWaveAt=Infinity;
     }
   }
