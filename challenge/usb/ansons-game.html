@@ -199,10 +199,10 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
         <span class="game-type-label">Game type</span>
         <div class="game-type-selector" role="group" aria-label="Choose game type">
           <button class="game-type-button selected" data-game-type="verbs" type="button" aria-pressed="true">Verbs</button>
-          <button class="game-type-button" data-game-type="choice2" type="button" aria-pressed="false">Choice 2 · Sentences</button>
-          <button class="game-type-button" data-game-type="choice3" type="button" aria-pressed="false">Choice 3</button>
+          <button class="game-type-button" data-game-type="choice2" type="button" aria-pressed="false">Story Time</button>
+          <button class="game-type-button" data-game-type="choice3" type="button" aria-pressed="false">General Questions</button>
         </div>
-        <p id="game-type-note" class="choice-count-description">Verbs is ready to play. Choice 2 mixes easy passive voice and present perfect sentences; Choice 3 is a placeholder.</p>
+        <p id="game-type-note" class="choice-count-description">Choose Verbs, Story Time, or General Questions. Each game uses the same answer and boid setup.</p>
       </div>
       <div id="player-count-row" class="player-count-row" hidden>
         <span>Players</span>
@@ -624,7 +624,8 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   let transitionTimeout = null;
   let active = false;
   let soloRecords = [];
-  let sentenceHistory = new Set();
+  let storyHistory = new Set();
+  let generalQuestionHistory = new Set();
   let players = [];
   let answeredThisQuestion = [];
 
@@ -642,76 +643,139 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     clearTimeout(transitionTimeout);
   }
   const CHOICE_LEVEL_NAMES = {3:'Warm-up',4:'Easy',5:'Steady',6:'Tricky',7:'Hard',8:'Expert'};
-  const SENTENCE_BANK = [
-    {sentence:'The cake was ___ by Mom.', answer:'eaten', kind:'passive'},
-    {sentence:'The ball was ___ into the yard.', answer:'thrown', kind:'passive'},
-    {sentence:'The glass was ___ on the floor.', answer:'broken', kind:'passive'},
-    {sentence:'The picture was ___ by Mia.', answer:'drawn', kind:'passive'},
-    {sentence:'The letter was ___ by Sam.', answer:'written', kind:'passive'},
-    {sentence:'The song was ___ by the children.', answer:'sung', kind:'passive'},
-    {sentence:'The door was ___ at night.', answer:'shut', kind:'passive'},
-    {sentence:'The lunch was ___ for the picnic.', answer:'made', kind:'passive'},
-    {sentence:'The lost toy was ___ under the bed.', answer:'found', kind:'passive'},
-    {sentence:'The car was ___ to school.', answer:'driven', kind:'passive'},
-    {sentence:'The fish was ___ in the pond.', answer:'caught', kind:'passive'},
-    {sentence:'The gift was ___ to Lily.', answer:'given', kind:'passive'},
-    {sentence:'The bike was ___ to the park.', answer:'taken', kind:'passive'},
-    {sentence:'The red shirt was ___ on Monday.', answer:'worn', kind:'passive'},
-    {sentence:'The story was ___ aloud.', answer:'read', kind:'passive'},
-    {sentence:'The floor was ___ after lunch.', answer:'swept', kind:'passive'},
-    {sentence:'The baby was ___ by Dad.', answer:'held', kind:'passive'},
-    {sentence:'The blocks were ___ into a tower.', answer:'built', kind:'passive'},
-    {sentence:'The dog was ___ before bed.', answer:'fed', kind:'passive'},
-    {sentence:'The song was ___ on the radio.', answer:'heard', kind:'passive'},
-    {sentence:'The ball was ___ by the bat.', answer:'hit', kind:'passive'},
-    {sentence:'The new toy was ___ at the shop.', answer:'bought', kind:'passive'},
-    {sentence:'The kite was ___ up high.', answer:'flown', kind:'passive'},
-    {sentence:'The bunny was ___ in the box.', answer:'hidden', kind:'passive'},
-    {sentence:'The picture was ___ by everyone.', answer:'seen', kind:'passive'},
-    {sentence:'The box was ___ to Grandma.', answer:'brought', kind:'passive'},
-    {sentence:'The cup was ___ on the table.', answer:'put', kind:'passive'},
-    {sentence:'The chair was ___ near the window.', answer:'set', kind:'passive'},
-    {sentence:'The paper was ___ into a boat.', answer:'cut', kind:'passive'},
-    {sentence:'The books were ___ on the shelf.', answer:'laid', kind:'passive'},
-    {sentence:'I have ___ my lunch.', answer:'eaten', kind:'perfect'},
-    {sentence:'She has ___ her name.', answer:'written', kind:'perfect'},
-    {sentence:'We have ___ the moon.', answer:'seen', kind:'perfect'},
-    {sentence:'He has ___ a toy.', answer:'made', kind:'perfect'},
-    {sentence:'They have ___ home.', answer:'gone', kind:'perfect'},
-    {sentence:'The dog has ___ fast.', answer:'run', kind:'perfect'},
-    {sentence:'I have ___ a bath.', answer:'taken', kind:'perfect'},
-    {sentence:'We have ___ a cake.', answer:'made', kind:'perfect'},
-    {sentence:'She has ___ a cat.', answer:'drawn', kind:'perfect'},
-    {sentence:'He has ___ the ball.', answer:'caught', kind:'perfect'},
-    {sentence:'I have ___ my milk.', answer:'drunk', kind:'perfect'},
-    {sentence:'We have ___ a song.', answer:'sung', kind:'perfect'},
-    {sentence:'The baby has ___ well.', answer:'slept', kind:'perfect'},
-    {sentence:'Dad has ___ the car.', answer:'driven', kind:'perfect'},
-    {sentence:'Mom has ___ apples.', answer:'bought', kind:'perfect'},
-    {sentence:'The bird has ___ away.', answer:'flown', kind:'perfect'},
-    {sentence:'I have ___ my shoe.', answer:'found', kind:'perfect'},
-    {sentence:'She has ___ me a book.', answer:'given', kind:'perfect'},
-    {sentence:'They have ___ a tower.', answer:'built', kind:'perfect'},
-    {sentence:'The cat has ___ behind the chair.', answer:'hidden', kind:'perfect'},
-    {sentence:'We have ___ this book.', answer:'read', kind:'perfect'},
-    {sentence:'He has ___ his bike.', answer:'ridden', kind:'perfect'},
-    {sentence:'I have ___ my bag.', answer:'forgotten', kind:'perfect'},
-    {sentence:'She has ___ a doll.', answer:'chosen', kind:'perfect'},
-    {sentence:'We have ___ a plant.', answer:'grown', kind:'perfect'},
-    {sentence:'The glass has ___ down.', answer:'fallen', kind:'perfect'},
-    {sentence:'The bus has ___ to school.', answer:'come', kind:'perfect'},
-    {sentence:'I have ___ the paper.', answer:'cut', kind:'perfect'},
-    {sentence:'She has ___ on her shoes.', answer:'put', kind:'perfect'},
-    {sentence:'We have ___ our friends.', answer:'met', kind:'perfect'},
-    {sentence:'We have ___ our work.', answer:'done', kind:'perfect'}
+  const STORY_BANK = [
+    {title:'The Lost Kitten',sentences:[
+      {sentence:'Mia has ___ a tiny kitten near the gate.',answer:'found',kind:'perfect'},
+      {sentence:'The kitten was ___ inside a red box.',answer:'hidden',kind:'passive'},
+      {sentence:'It has ___ under a soft scarf.',answer:'slept',kind:'perfect'},
+      {sentence:'A small bed was ___ beside the window.',answer:'put',kind:'passive'},
+      {sentence:'Milk was ___ to the kitten by Mia.',answer:'given',kind:'passive'},
+      {sentence:'The kitten has ___ all the milk.',answer:'drunk',kind:'perfect'},
+      {sentence:'Its name was ___ by Mia.',answer:'chosen',kind:'passive'},
+      {sentence:'A little bell was ___ for the kitten.',answer:'bought',kind:'passive'},
+      {sentence:'The bell was ___ on its collar.',answer:'put',kind:'passive'},
+      {sentence:'Mia has ___ a new friend.',answer:'made',kind:'perfect'}
+    ]},
+    {title:'Ben and the Kite',sentences:[
+      {sentence:'Ben has ___ a red kite.',answer:'made',kind:'perfect'},
+      {sentence:'Its tail was ___ from blue paper.',answer:'made',kind:'passive'},
+      {sentence:'The kite was ___ into the sky by Ben.',answer:'flown',kind:'passive'},
+      {sentence:'The wind has ___ hard.',answer:'blown',kind:'perfect'},
+      {sentence:'The kite was ___ in a tree.',answer:'caught',kind:'passive'},
+      {sentence:'Dad has ___ a ladder.',answer:'brought',kind:'perfect'},
+      {sentence:'The ladder was ___ beside the tree.',answer:'put',kind:'passive'},
+      {sentence:'The kite was ___ down gently.',answer:'taken',kind:'passive'},
+      {sentence:'Ben has ___ the string tightly.',answer:'held',kind:'perfect'},
+      {sentence:'The kite has ___ safely home.',answer:'come',kind:'perfect'}
+    ]},
+    {title:'The Moon Picnic',sentences:[
+      {sentence:'We have ___ a picnic basket.',answer:'brought',kind:'perfect'},
+      {sentence:'The sandwiches were ___ by Dad.',answer:'made',kind:'passive'},
+      {sentence:'The blue blanket was ___ on the grass.',answer:'put',kind:'passive'},
+      {sentence:'The cups were ___ beside the plates.',answer:'set',kind:'passive'},
+      {sentence:'A little bird has ___ a crumb.',answer:'taken',kind:'perfect'},
+      {sentence:'The children have ___ a song.',answer:'sung',kind:'perfect'},
+      {sentence:'The kite was ___ over the lake.',answer:'flown',kind:'passive'},
+      {sentence:'The last apple was ___ in two.',answer:'cut',kind:'passive'},
+      {sentence:'They have ___ the moon.',answer:'seen',kind:'perfect'},
+      {sentence:'They have ___ home.',answer:'gone',kind:'perfect'}
+    ]},
+    {title:'Sam and the Robot',sentences:[
+      {sentence:'Sam has ___ a small robot from blocks.',answer:'built',kind:'perfect'},
+      {sentence:'A red button was ___ on its chest.',answer:'put',kind:'passive'},
+      {sentence:'The robot has ___ a silly song.',answer:'sung',kind:'perfect'},
+      {sentence:'Its song was ___ by everyone.',answer:'heard',kind:'passive'},
+      {sentence:'Sam has ___ the robot a name.',answer:'given',kind:'perfect'},
+      {sentence:'The name was ___ on a card.',answer:'written',kind:'passive'},
+      {sentence:'The robot has ___ Sam’s shoe.',answer:'taken',kind:'perfect'},
+      {sentence:'A toy hat was ___ on its head.',answer:'put',kind:'passive'},
+      {sentence:'The robot was ___ to the table by Sam.',answer:'led',kind:'passive'},
+      {sentence:'Sam has ___ a new friend.',answer:'made',kind:'perfect'}
+    ]},
+    {title:'Lily’s Magic Garden',sentences:[
+      {sentence:'Lily has ___ a tiny seed.',answer:'found',kind:'perfect'},
+      {sentence:'It was ___ in a pot.',answer:'put',kind:'passive'},
+      {sentence:'The pot was ___ by the window.',answer:'set',kind:'passive'},
+      {sentence:'Water was ___ to the seed each day.',answer:'given',kind:'passive'},
+      {sentence:'The seed has ___ tall.',answer:'grown',kind:'perfect'},
+      {sentence:'A little leaf was ___ on Monday.',answer:'seen',kind:'passive'},
+      {sentence:'A bee has ___ to visit.',answer:'come',kind:'perfect'},
+      {sentence:'The bee has ___ a little nectar.',answer:'drunk',kind:'perfect'},
+      {sentence:'A flower was ___ to Mom.',answer:'given',kind:'passive'},
+      {sentence:'Lily has ___ a pretty garden.',answer:'made',kind:'perfect'}
+    ]},
+    {title:'The Little Dragon',sentences:[
+      {sentence:'A little dragon has ___ a yellow hat.',answer:'chosen',kind:'perfect'},
+      {sentence:'The hat was ___ by the dragon.',answer:'worn',kind:'passive'},
+      {sentence:'He has ___ a song about his hat.',answer:'sung',kind:'perfect'},
+      {sentence:'The song was ___ by the birds.',answer:'heard',kind:'passive'},
+      {sentence:'A little cake was ___ by the dragon.',answer:'eaten',kind:'passive'},
+      {sentence:'He has ___ a glass of water.',answer:'drunk',kind:'perfect'},
+      {sentence:'A blue scarf was ___ around his neck.',answer:'put',kind:'passive'},
+      {sentence:'He has ___ out a birthday candle.',answer:'blown',kind:'perfect'},
+      {sentence:'His friends have ___ him a card.',answer:'given',kind:'perfect'},
+      {sentence:'The dragon has ___ a happy day.',answer:'had',kind:'perfect'}
+    ]}
   ];
-  function updateRoundNote() {
+  const GENERAL_QUESTION_BANK = [
+    {sentence:'A ripe banana is usually ___.',answer:'yellow',distractors:['red','blue','purple','black','white','pink','silver']},
+    {sentence:'A dog says ___.',answer:'woof',distractors:['meow','moo','quack','neigh','roar','hiss','buzz']},
+    {sentence:'A triangle has ___ sides.',answer:'three',distractors:['one','two','four','five','six','seven','eight']},
+    {sentence:'We see with our ___.',answer:'eyes',distractors:['ears','nose','mouth','hands','feet','elbows','knees']},
+    {sentence:'Fish live in ___.',answer:'water',distractors:['sand','trees','sky','books','grass','clouds','shoes']},
+    {sentence:'The opposite of hot is ___.',answer:'cold',distractors:['loud','tall','fast','round','soft','bright','sweet']},
+    {sentence:'A baby cat is called a ___.',answer:'kitten',distractors:['puppy','calf','chick','lamb','foal','cub','duckling']},
+    {sentence:'We use a pencil to ___.',answer:'write',distractors:['eat','sleep','swim','sing','jump','drive','fly']},
+    {sentence:'The sun shines in the ___.',answer:'sky',distractors:['shoe','bowl','bed','garden','pencil','pocket','box']},
+    {sentence:'A cow says ___.',answer:'moo',distractors:['meow','bark','quack','chirp','hiss','roar','beep']},
+    {sentence:'Ice is ___ to touch.',answer:'cold',distractors:['hot','noisy','hungry','fast','furry','loud','tall']},
+    {sentence:'A week has ___ days.',answer:'seven',distractors:['one','two','three','four','five','six','eight']},
+    {sentence:'A wheel is shaped like a ___.',answer:'circle',distractors:['square','triangle','star','heart','cube','rectangle','diamond']},
+    {sentence:'We sleep in a ___.',answer:'bed',distractors:['pan','shoe','tree','book','cup','plate','pencil']},
+    {sentence:'A bird has ___.',answer:'feathers',distractors:['fur','scales','wheels','leaves','windows','keys','bricks']},
+    {sentence:'We brush our teeth with a ___.',answer:'toothbrush',distractors:['spoon','fork','comb','shoe','pencil','cup','plate']},
+    {sentence:'The opposite of day is ___.',answer:'night',distractors:['morning','summer','lunch','rain','spring','school','music']},
+    {sentence:'A spider has eight ___.',answer:'legs',distractors:['wings','wheels','tails','beaks','fins','horns','hooves']},
+    {sentence:'The long part between a giraffe’s head and body is its ___.',answer:'neck',distractors:['tail','foot','ear','horn','tongue','hoof','wing']},
+    {sentence:'Frozen water is called ___.',answer:'ice',distractors:['steam','smoke','sand','wood','salt','grass','flour']},
+    {sentence:'A red traffic light means ___.',answer:'stop',distractors:['go','jump','sing','sleep','eat','run','dance']},
+    {sentence:'Rain falls from ___.',answer:'clouds',distractors:['trees','shoes','windows','plates','books','fish','clocks']},
+    {sentence:'A bee makes ___.',answer:'honey',distractors:['milk','bread','juice','rice','cheese','tea','soup']},
+    {sentence:'A horse says ___.',answer:'neigh',distractors:['moo','meow','quack','woof','buzz','beep','roar']},
+    {sentence:'A square has ___ equal sides.',answer:'four',distractors:['one','two','three','five','six','seven','eight']},
+    {sentence:'The first meal of the day is ___.',answer:'breakfast',distractors:['dinner','supper','lunch','dessert','snack','picnic','midnight']},
+    {sentence:'A caterpillar can turn into a ___.',answer:'butterfly',distractors:['frog','puppy','kitten','fish','turtle','rabbit','horse']},
+    {sentence:'We read a story in a ___.',answer:'book',distractors:['spoon','shoe','sock','cup','plate','pillow','ball']},
+    {sentence:'A firefighter uses water to put out a ___.',answer:'fire',distractors:['cake','song','book','pencil','pillow','shoe','cloud']},
+    {sentence:'One more than nine is ___.',answer:'ten',distractors:['two','four','six','eight','eleven','twelve','twenty']},
+    {sentence:'A rainbow has many ___.',answer:'colors',distractors:['wheels','windows','doors','shoes','buttons','legs','pages']},
+    {sentence:'A turtle has a hard ___.',answer:'shell',distractors:['feather','fur','wheel','leaf','wing','beak','fin']},
+    {sentence:'The opposite of up is ___.',answer:'down',distractors:['out','tall','fast','small','open','loud','blue']},
+    {sentence:'The long nose of an elephant is its ___.',answer:'trunk',distractors:['tusk','tail','foot','ear','eye','tooth','skin']},
+    {sentence:'We use a clock to know the ___.',answer:'time',distractors:['color','name','song','taste','smell','weight','shape']},
+    {sentence:'A duck says ___.',answer:'quack',distractors:['bark','moo','roar','neigh','meow','hiss','beep']},
+    {sentence:'Mixing red and white makes ___.',answer:'pink',distractors:['brown','green','blue','gray','orange','black','yellow']},
+    {sentence:'A sheep says ___.',answer:'baa',distractors:['meow','moo','quack','neigh','roar','hiss','buzz']},
+    {sentence:'A baby dog is a ___.',answer:'puppy',distractors:['kitten','calf','chick','lamb','foal','cub','duckling']},
+    {sentence:'A carrot is a ___.',answer:'vegetable',distractors:['fruit','drink','animal','toy','shoe','book','planet']},
+    {sentence:'A lion is a wild ___.',answer:'animal',distractors:['flower','vehicle','drink','instrument','building','planet','food']},
+    {sentence:'We hear with our ___.',answer:'ears',distractors:['eyes','nose','mouth','hands','feet','elbows','knees']},
+    {sentence:'Grass is usually ___.',answer:'green',distractors:['pink','blue','black','white','orange','purple','gray']},
+    {sentence:'A baby sheep is a ___.',answer:'lamb',distractors:['kitten','puppy','calf','chick','foal','cub','duckling']},
+    {sentence:'A person who teaches children is a ___.',answer:'teacher',distractors:['farmer','pilot','baker','doctor','singer','painter','driver']},
+    {sentence:'A boat travels on ___.',answer:'water',distractors:['sand','grass','clouds','roads','books','shoes','walls']},
+    {sentence:'A penguin is a kind of ___.',answer:'bird',distractors:['fish','insect','flower','tree','rock','vehicle','fruit']},
+    {sentence:'The season after winter is ___.',answer:'spring',distractors:['summer','autumn','winter','Monday','night','breakfast','December']},
+    {sentence:'A home for bees is called a ___.',answer:'hive',distractors:['kennel','stable','nest','cave','pond','burrow','coop']},
+    {sentence:'We use an umbrella when it ___.',answer:'rains',distractors:['sings','reads','sleeps','laughs','dances','grows','shines']},
+    {sentence:'A rabbit has long ___.',answer:'ears',distractors:['wings','fins','horns','hooves','trunks','shells','beaks']}
+  ];  function updateRoundNote() {
     if (selectedGameType === 'choice3') {
-      ui.roundNote.textContent = 'Choice 3 is a placeholder. Choose Verbs or Sentences to play.';
+      ui.roundNote.textContent = '10 general questions · ' + selectedChoiceCount + ' choices · no spelling mistakes · Works offline';
       return;
     }
     if (selectedGameType === 'choice2') {
-      ui.roundNote.textContent = '10 easy passive voice and present perfect sentences · ' + selectedChoiceCount + ' choices · Works offline';
+      ui.roundNote.textContent = 'Story Time · one 10-sentence story · ' + selectedChoiceCount + ' choices · Works offline';
       return;
     }
     ui.roundNote.textContent = mode === 'solo'
@@ -719,8 +783,8 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       : 'Challenge · 8–12 questions · ' + selectedChoiceCount + ' choices · ' + CHOICE_LEVEL_NAMES[selectedChoiceCount];
   }
   function configureEnemyDelay(type) {
-    const values = type === 'choice2' ? [4,5,6,7,8,9] : [4,5,6];
-    const defaultValue = type === 'choice2' ? 6 : 4;
+    const values = type === 'verbs' ? [4,5,6] : [4,5,6,7,8,9];
+    const defaultValue = type === 'verbs' ? 4 : 6;
     while (ui.enemyDelay.firstChild) ui.enemyDelay.removeChild(ui.enemyDelay.firstChild);
     values.forEach(function (value) {
       const option = document.createElement('option');
@@ -738,13 +802,13 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       button.setAttribute('aria-pressed', selected ? 'true' : 'false');
     });
     configureEnemyDelay(type);
-    ui.start.disabled = type === 'choice3';
-    ui.start.textContent = type === 'verbs' ? "Start Anson's Game" : type === 'choice2' ? 'Start Sentence Game' : 'Choice 3 is not ready yet';
+    ui.start.disabled = false;
+    ui.start.textContent = type === 'verbs' ? "Start Anson's Game" : type === 'choice2' ? 'Start Story Time' : 'Start General Questions';
     ui.gameTypeNote.textContent = type === 'verbs'
-      ? 'Verbs is ready to play. Choice 2 is the easy sentence game; Choice 3 is a placeholder.'
+      ? 'Verbs is ready to play. Story Time and General Questions are also available.'
       : type === 'choice2'
-        ? 'Choice 2 mixes simple passive voice and present perfect sentences.'
-        : 'Choice 3 is a placeholder for a future game type.';
+        ? 'Story Time uses simple 10-sentence stories with passive voice and present perfect.'
+        : 'General Questions uses simple facts and real word choices, with no spelling mistakes.';
     updateRoundNote();
   }
   function setMode(nextMode) {
@@ -782,40 +846,59 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     }
     return copy;
   }
-  function createSentenceSession(questionCount, choiceCount) {
-    let available = SENTENCE_BANK.filter(function (item) { return !sentenceHistory.has(item.sentence); });
-    if (available.length < questionCount) {
-      sentenceHistory.clear();
-      available = SENTENCE_BANK.slice();
-    }
-    const passive = shuffleLocal(available.filter(function (item) { return item.kind === 'passive'; })).slice(0, Math.ceil(questionCount / 2));
-    const perfect = shuffleLocal(available.filter(function (item) { return item.kind === 'perfect'; })).slice(0, Math.floor(questionCount / 2));
-    const selected = shuffleLocal(passive.concat(perfect));
-    selected.forEach(function (item) { sentenceHistory.add(item.sentence); });
+  function spellingChoices(answer, choiceCount) {
     const validForms = Array.from(new Set(bank.reduce(function (all, verb) { return all.concat(verb); }, [])));
-    return selected.map(function (item) {
-      const sourceVerb = bank.find(function (verb) { return verb[2] === item.answer; }) || [item.answer,item.answer,item.answer];
-      const records = SpellingRules.createDistractorRecords(
-        item.answer, validForms, choiceCount - 1, Math.random,
-        {forms:sourceVerb,missingIndex:2}
-      );
-      const distractors = records.map(function (record) { return record.value; });
+    const sourceVerb = bank.find(function (verb) { return verb[2] === answer; }) || [answer,answer,answer];
+    const records = SpellingRules.createDistractorRecords(
+      answer, validForms, choiceCount - 1, Math.random,
+      {forms:sourceVerb,missingIndex:2}
+    );
+    return shuffleLocal([answer].concat(records.map(function (record) { return record.value; })));
+  }
+  function createStorySession(questionCount, choiceCount) {
+    let available = STORY_BANK.filter(function (story) { return !storyHistory.has(story.title); });
+    if (!available.length) {
+      storyHistory.clear();
+      available = STORY_BANK.slice();
+    }
+    const story = shuffleLocal(available)[0];
+    storyHistory.add(story.title);
+    return story.sentences.slice(0, questionCount).map(function (item) {
       return Object.freeze({
-        sentence: item.sentence,
-        kind: item.kind,
-        answer: item.answer,
-        choices: Object.freeze(shuffleLocal([item.answer].concat(distractors)))
+        sentence:item.sentence,
+        answer:item.answer,
+        kind:item.kind,
+        choices:Object.freeze(spellingChoices(item.answer,choiceCount))
+      });
+    });
+  }
+  function createGeneralSession(questionCount, choiceCount) {
+    let available = GENERAL_QUESTION_BANK.filter(function (item) { return !generalQuestionHistory.has(item.sentence); });
+    if (available.length < questionCount) {
+      generalQuestionHistory.clear();
+      available = GENERAL_QUESTION_BANK.slice();
+    }
+    const selected = shuffleLocal(available).slice(0, questionCount);
+    selected.forEach(function (item) { generalQuestionHistory.add(item.sentence); });
+    return selected.map(function (item) {
+      const distractors = shuffleLocal(item.distractors.slice()).slice(0, choiceCount - 1);
+      return Object.freeze({
+        sentence:item.sentence,
+        answer:item.answer,
+        kind:'general',
+        choices:Object.freeze(shuffleLocal([item.answer].concat(distractors)))
       });
     });
   }
   function start() {
-    if (selectedGameType === 'choice3') return;
     clearTimers();
     const questionCount = SOLO_QUESTION_COUNT;
     const effectiveChoiceCount = selectedChoiceCount;
     questions = selectedGameType === 'choice2'
-      ? createSentenceSession(questionCount, effectiveChoiceCount)
-      : VerbQuizCore.createSession(bank, SpellingRules, questionCount, undefined, effectiveChoiceCount);
+      ? createStorySession(questionCount, effectiveChoiceCount)
+      : selectedGameType === 'choice3'
+        ? createGeneralSession(questionCount, effectiveChoiceCount)
+        : VerbQuizCore.createSession(bank, SpellingRules, questionCount, undefined, effectiveChoiceCount);
     index = 0;
     correctCount = 0;
     soloRecords = [];
@@ -873,7 +956,10 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     ui.score.textContent = mode === 'solo' ? 'Correct: ' + correctCount : 'Challenge · first correct answer scores';
     ui.progress.style.width = ((index / questions.length) * 100) + '%';
     if (selectedGameType === 'choice2') {
-      ui.questionTitle.textContent = 'Listen to the sentence, then choose the missing word:';
+      ui.questionTitle.textContent = 'Story Time · listen to the sentence and choose the missing word:';
+      setSentencePattern(question);
+    } else if (selectedGameType === 'choice3') {
+      ui.questionTitle.textContent = 'General question · listen and choose the missing word:';
       setSentencePattern(question);
     } else {
       ui.questionTitle.textContent = 'Listen to the question, then choose the missing word:';
@@ -1101,8 +1187,8 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const norm=(x,y)=>{const d=Math.hypot(x,y)||1;return{x:x/d,y:y/d};};
   const TAU=Math.PI*2, HIT_R=12, PLAYER_COLOR='#28f3d1', ENEMY_COLOR='#ff4b65';
-  let canvas,ctx,W=0,H=0,dpr=1,raf=0,last=0,boids=[],roundOn=false,nextWaveAt=0,collisions=0;
-  let delaySeconds=4,scheduledWaveSize=1,maxEnemyBoids=40;
+  let canvas,ctx,W=0,H=0,dpr=1,raf=0,last=0,boids=[],roundOn=false,pendingWaves=[],collisions=0;
+  let delaySeconds=4,maxEnemyBoids=40;
   function readSettings(){
     delaySeconds=Number(delaySelect.value)||4;
     maxEnemyBoids=Number(enemyLimitSelect.value)||40;
@@ -1142,17 +1228,16 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     }
   }
   function reset(){
-    boids=[];collisions=0;roundOn=true;readSettings();nextWaveAt=Infinity;
+    boids=[];collisions=0;roundOn=true;pendingWaves=[];readSettings();
   }
   function questionStarted(waveSize){
-    if(roundOn){scheduledWaveSize=waveSize;nextWaveAt=performance.now()+delaySeconds*1000;}
+    if(roundOn)pendingWaves.push({at:performance.now()+delaySeconds*1000,count:waveSize});
   }
   function updateClock(now){
-    if(!roundOn||quiz.hidden||!Number.isFinite(nextWaveAt))return;
-    if(now>=nextWaveAt){
-      spawnEnemyWave(scheduledWaveSize);
-      nextWaveAt=Infinity;
-    }
+    if(!roundOn||quiz.hidden||!pendingWaves.length)return;
+    const ready=pendingWaves.filter(function (wave) { return wave.at<=now; });
+    pendingWaves=pendingWaves.filter(function (wave) { return wave.at>now; });
+    ready.forEach(function (wave) { spawnEnemyWave(wave.count); });
   }
   function tick(now){
     raf=requestAnimationFrame(tick);
