@@ -23,13 +23,15 @@ Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/ver
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Multiplayer challenge build; each round randomly has 8–12 questions, and players do not see how many remain. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | Bundled one-file challenge for USB/offline testing on larger touchscreens. |
 | Choice test (experimental) | `challenge/usb/verb-challenge-choice-test.html` | Standalone classroom test with selectable answer-count difficulty; other builds remain unchanged. |
-| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | Verbs game ready, Choice 2/3 placeholders, choice-scaled Q1–Q10 boid rewards, matching enemy waves, and 4–6 second question delay. |
+| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | Verbs and a 60-sentence Passive/Present Perfect mode, choice-scaled boid rewards, matching enemy waves, and 4–6 second delay. |
 
 Online single-player scores are handled separately by the Google Apps Script source in `apps-script/`, with results stored in Google Sheets. GitHub Pages hosts static HTML; it does not run the Apps Script backend.
 
 ### Anson's Game prototype
 
-The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Each question schedules one enemy wave 4, 5, or 6 seconds after it appears (default 4). Both the player's correct-answer salvo and that question's enemy wave use `question number + (answer choices − 3)`: with 3 choices Q1 releases 1 and Q9 releases 9; each additional choice adds one boid. The adult can cap active enemies from 10 to 100 (default 40); a wave is skipped if it would exceed the cap. The enlarged boid arena sits below the question and answer controls, keeping boids out of the displayed verbs and missing-word prompt. The start screen lists Verbs as playable and Choice 2 / Choice 3 as placeholders until their game content is defined. These rules remain isolated in the experimental 10-question, 3–8-choice standalone file.
+The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Each question schedules one enemy wave 4, 5, or 6 seconds after it appears (default 4). Both the player's correct-answer salvo and that question's enemy wave use `question number + (answer choices − 3)`. The adult can cap active enemies from 10 to 100 (default 40); a wave is skipped if it would exceed the cap. The enlarged boid arena sits below the question and answer controls. A correct answer immediately releases the player's salvo; enemy boids have three hit points and opposing collisions knock them apart.
+
+Choice 2 is a ready-to-play offline sentence mode with 60 easy prompts: 30 passive voice and 30 present perfect sentences. Each 10-question round mixes five of each type, with no repeats until the full pool is used. Each question offers past participles from the existing irregular-verb list. The New game button returns to the initial setup screen; Verbs and Sentences (Choice 2) are playable, while Choice 3 remains a labeled placeholder until its content is defined.
 
 ## Decisions to preserve
 
