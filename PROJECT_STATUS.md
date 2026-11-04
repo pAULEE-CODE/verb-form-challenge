@@ -23,13 +23,13 @@ Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/ver
 | Challenge | `challenge/verb-challenge-boids-predatory.html` | Multiplayer challenge build; each round randomly has 8–12 questions, and players do not see how many remain. |
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | Bundled one-file challenge for USB/offline testing on larger touchscreens. |
 | Choice test (experimental) | `challenge/usb/verb-challenge-choice-test.html` | Standalone classroom test with selectable answer-count difficulty; other builds remain unchanged. |
-| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | One-player read-aloud build with 3–8 choices, large answer timer, hidden 1–7 second enemy-wave timing, and up to 10 enemy boids per wave. |
+| Anson's Game (experimental) | `challenge/usb/ansons-game.html` | One-player read-aloud build with Q1–Q10 boid rewards, a large answer timer, hidden 4–6 second enemy delays, and an adjustable enemy cap. |
 
 Online single-player scores are handled separately by the Google Apps Script source in `apps-script/`, with results stored in Google Sheets. GitHub Pages hosts static HTML; it does not run the Apps Script backend.
 
 ### Anson's Game prototype
 
-The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Fixed enemy waves can arrive every 1–7 seconds (default 4), with a selectable wave size from 2 to 10 (default 10, the same as the player's salvo). The adult can cap active enemies from 10 to 100 (default 40). The enlarged boid arena sits below the question and answer controls, keeping boids out of the displayed verbs and missing-word prompt. Other timing experiments remain available: one second after each answer, or adaptive timing using the answer duration, clamped to 1–7 seconds. The answer-to-wave timing modes and 10-question, 3–8-choice solo format remain isolated in this experimental standalone file. Test the arena size, wave density, and 3-HP collisions on classroom touchscreens before changing the regular Challenge modes.
+The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. One enemy wave is released 4, 5, or 6 seconds after each question appears (default 4). A correct answer releases boids equal to the question number: Q1 gives 1, Q2 gives 2, up to Q10 giving 10. Enemy wave size is selectable from 1 to 10 (default 10), and the adult can cap active enemies from 10 to 100 (default 40). The enlarged boid arena sits below the question and answer controls, keeping boids out of the displayed verbs and missing-word prompt. The enemy delay is measured from when each question appears. The 10-question, 3–8-choice solo format and its enemy timing remain isolated in this experimental standalone file. Test the arena size, wave density, and 3-HP collisions on classroom touchscreens before changing the regular Challenge modes.
 
 ## Decisions to preserve
 
