@@ -247,6 +247,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
             </select>
           </label>
         </div>
+        <p class="choice-count-description">Enemy boids are capped at 10 until Anson has a larger flock; the maximum setting is an additional limit.</p>
       </section>
       <button id="start-button" class="button button-primary">Start Anson's Game</button>
       <p id="round-note" class="small-note">10 questions · Starts with 3 choices · Works offline</p>
@@ -588,6 +589,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     questionCount: document.getElementById('question-count'),
     questionTitle: document.getElementById('question-title'),
     gameTypeNote: document.getElementById('game-type-note'),
+    enemyDelay: document.getElementById('enemy-delay'),
     score: document.getElementById('score'),
     progress: document.getElementById('progress-fill'),
     timer: document.getElementById('timer'),
@@ -716,6 +718,18 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       ? '10 questions · ' + selectedChoiceCount + ' choices · Works offline'
       : 'Challenge · 8–12 questions · ' + selectedChoiceCount + ' choices · ' + CHOICE_LEVEL_NAMES[selectedChoiceCount];
   }
+  function configureEnemyDelay(type) {
+    const values = type === 'choice2' ? [4,5,6,7,8,9] : [4,5,6];
+    const defaultValue = type === 'choice2' ? 6 : 4;
+    while (ui.enemyDelay.firstChild) ui.enemyDelay.removeChild(ui.enemyDelay.firstChild);
+    values.forEach(function (value) {
+      const option = document.createElement('option');
+      option.value = String(value);
+      option.textContent = value + ' seconds' + (value === defaultValue ? ' · default' : '');
+      ui.enemyDelay.appendChild(option);
+    });
+    ui.enemyDelay.value = String(defaultValue);
+  }
   function setGameType(type) {
     selectedGameType = type;
     document.querySelectorAll('[data-game-type]').forEach(function (button) {
@@ -723,6 +737,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', selected ? 'true' : 'false');
     });
+    configureEnemyDelay(type);
     ui.start.disabled = type === 'choice3';
     ui.start.textContent = type === 'verbs' ? "Start Anson's Game" : type === 'choice2' ? 'Start Sentence Game' : 'Choice 3 is not ready yet';
     ui.gameTypeNote.textContent = type === 'verbs'
@@ -777,9 +792,14 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     const perfect = shuffleLocal(available.filter(function (item) { return item.kind === 'perfect'; })).slice(0, Math.floor(questionCount / 2));
     const selected = shuffleLocal(passive.concat(perfect));
     selected.forEach(function (item) { sentenceHistory.add(item.sentence); });
-    const participles = Array.from(new Set(bank.map(function (verb) { return verb[2]; })));
+    const validForms = Array.from(new Set(bank.reduce(function (all, verb) { return all.concat(verb); }, [])));
     return selected.map(function (item) {
-      const distractors = shuffleLocal(participles.filter(function (word) { return word !== item.answer; })).slice(0, choiceCount - 1);
+      const sourceVerb = bank.find(function (verb) { return verb[2] === item.answer; }) || [item.answer,item.answer,item.answer];
+      const records = SpellingRules.createDistractorRecords(
+        item.answer, validForms, choiceCount - 1, Math.random,
+        {forms:sourceVerb,missingIndex:2}
+      );
+      const distractors = records.map(function (record) { return record.value; });
       return Object.freeze({
         sentence: item.sentence,
         kind: item.kind,
@@ -1112,7 +1132,9 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     // Enemies enter in the same number as the player's salvo for this question.
     // Skip a wave if it would cross the chosen active-enemy cap.
     const activeEnemies=boids.reduce((total,b)=>total+(b.team===1?1:0),0);
-    if(activeEnemies+count>maxEnemyBoids||boids.length+count>240)return;
+    const playerBoids=boids.reduce((total,b)=>total+(b.team===0?1:0),0);
+    const balancedEnemyLimit=Math.min(maxEnemyBoids,Math.max(10,playerBoids));
+    if(activeEnemies+count>balancedEnemyLimit||boids.length+count>240)return;
     for(let i=0;i<count;i++){
       const spread=(i-(count-1)/2)*Math.min(50,W/(count+1));
       const x=clamp(W*.5+spread+rnd(-12,12),16,W-16),y=18+rnd(0,16),a=rnd(Math.PI*.18,Math.PI*.82),s=rnd(1.1,1.9);
