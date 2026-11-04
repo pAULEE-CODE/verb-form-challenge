@@ -9,7 +9,7 @@ Use this note whenever changing the Verb Form Challenge. We maintain three test 
 | Standalone | `challenge/usb/verb-challenge-boids-predatory.html` | One-file challenge build for USB and offline device testing. |
 | Anson's Game | `challenge/usb/ansons-game.html` | One-player educational build with timed enemy waves and three-hit boid battles. |
 
-The standalone files are bundled builds of Challenge, not separate rulesets. The regular USB build is generated from the modular Challenge. The experimental choice test is a test-only variant; the browser builds remain unchanged until feedback is reviewed.
+The standalone files are bundled builds or isolated educational variants. The regular USB build is generated from the modular Challenge. The choice test and Anson's Game are test-only variants; the browser builds remain unchanged until feedback is reviewed.
 
 ## Current standalone test variant
 
@@ -19,7 +19,7 @@ The regular build script writes `challenge/usb/verb-challenge-boids-predatory.ht
 
 ## Anson's Game prototype
 
-`challenge/usb/ansons-game.html` is a separate standalone educational solo version. It keeps the 10-question round and 3–8 answer choices (default 3), releases ten player boids immediately after a correct answer, and lets the adult choose fixed, answer-linked, or adaptive enemy-wave timing. Enemy waves release once per question, 4–6 seconds after it appears (default 4). The large on-screen timer measures answer time; enemy countdowns remain hidden. Boids stay in a separate, enlarged arena below the question and answer controls so the words remain clear. A correct answer releases boids equal to the question number (Q1 = 1, Q2 = 2, through Q10 = 10). Enemy wave size is selectable from 1–10 (default 10), with a maximum active-enemy count selector from 10 to 100 (default 40). Enemy boids enter from the far edge; each has three hit points and opposing boid collisions knock them apart. Keep this experimental build separate from the regular Challenge builds while it is being tried with Anson.
+`challenge/usb/ansons-game.html` is a separate standalone educational solo version. It has 10 questions and 3–8 answer choices (default 3). A correct answer releases a salvo sized by `question number + (answer choices − 3)`; the enemy wave scheduled for that question uses the same count. For example, with 3 choices Q1 releases 1 boid and Q9 releases 9; choosing 4 choices adds one boid to each question's count. The enemy delay is configurable as 4, 5, or 6 seconds from the question appearing (default 4). The large timer measures answer time; the enemy countdown stays hidden. The enlarged boid arena sits below the words and answer buttons. The adult can cap active enemies from 10 to 100 (default 40); waves that would exceed the cap are skipped. Each boid has three hit points and collisions knock opposing boids apart. The start screen lists Verbs as ready to play and Choice 2 / Choice 3 as placeholders until their content is defined. Keep this experimental build separate from regular Challenge builds while it is being tried with Anson.
 
 ## Rules that must stay shared
 
