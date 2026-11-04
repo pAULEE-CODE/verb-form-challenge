@@ -207,24 +207,24 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
         </div>
         <p id="choice-count-description" class="choice-count-description">3 choices · Warm-up</p>
       </div>
-      <section class="enemy-settings" aria-label="Enemy boid timing settings">
-        <h3>Enemy boid arrival</h3>
+      <section class="enemy-settings" aria-label="Enemy boid settings">
+        <h3>Enemy boid release</h3>
         <div class="enemy-setting-grid">
-          <label for="enemy-timing-mode">Timing experiment
-            <select id="enemy-timing-mode">
-              <option value="fixed">Every set interval</option>
-              <option value="after-answer">1 second after each answer</option>
-              <option value="adaptive">Adaptive · based on answer time</option>
+          <label for="enemy-delay">Seconds after each question appears
+            <select id="enemy-delay">
+              <option value="4" selected>4 seconds · default</option>
+              <option value="5">5 seconds</option>
+              <option value="6">6 seconds</option>
             </select>
           </label>
-          <label for="enemy-wave-size">Enemy boids per wave
+          <label for="enemy-wave-size">Enemy boids per release
             <select id="enemy-wave-size">
               <option value="1">1 boid</option>
               <option value="2">2 boids</option>
               <option value="4">4 boids</option>
               <option value="6">6 boids</option>
               <option value="8">8 boids</option>
-              <option value="10" selected>10 boids · same as player</option>
+              <option value="10" selected>10 boids</option>
             </select>
           </label>
           <label for="enemy-limit">Maximum enemy boids
@@ -239,9 +239,6 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
             </select>
           </label>
         </div>
-        <label class="enemy-interval-setting" id="enemy-interval-setting" for="enemy-interval">Enemy wave interval
-          <div><input id="enemy-interval" type="range" min="1" max="7" step="1" value="4"><output id="enemy-interval-value" for="enemy-interval">4 s</output></div>
-        </label>
       </section>
       <button id="start-button" class="button button-primary">Start Anson's Game</button>
       <p id="round-note" class="small-note">10 questions · Starts with 3 choices · Works offline</p>
@@ -676,9 +673,8 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     }) : [];
     ui.progressTrack.hidden = mode === 'challenge';
     show('quiz');
-    renderQuestion();
-    // Decoration resets for each new game, not for each new question.
     if (window.ansonBoids) window.ansonBoids.reset();
+    renderQuestion();
   }
   function setWordPattern(question) {
     clearChildren(ui.pattern);
@@ -718,6 +714,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     if (mode === 'solo') renderSoloChoices(question);
     else renderChallengeAreas(question);
     startClock();
+    if (window.ansonBoids) window.ansonBoids.questionStarted();
   }
   function renderSoloChoices(question) {
     question.choices.forEach(function (choice) {
@@ -767,17 +764,16 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     clearInterval(timerInterval);
     const elapsed = (performance.now() - startedAt) / 1000;
     const correct = choice === questions[index].answer;
-    if (window.ansonBoids) window.ansonBoids.onAnswer(elapsed, correct);
     Array.from(ui.choices.children).forEach(function (button) {
       button.disabled = true;
       if (button.textContent === questions[index].answer) button.classList.add('correct');
     });
     if (correct) {
       correctCount += 1;
-      if (window.ansonBoids) window.ansonBoids.releasePlayerSalvo();
+      if (window.ansonBoids) window.ansonBoids.releasePlayerSalvo(index + 1);
       soloRecords[index] = { correct: true, answerTimeSeconds: elapsed, verb: questions[index].verb[0] };
       clickedButton.classList.add('correct');
-      ui.feedback.textContent = 'Correct! ' + formatTime(elapsed) + ' recorded.';
+      ui.feedback.textContent = 'Correct! +' + (index + 1) + ' ' + ((index + 1) === 1 ? 'boid' : 'boids') + '. ' + formatTime(elapsed) + ' recorded.';
       ui.feedback.classList.add('good');
     } else {
       soloRecords[index] = { correct: false, answerTimeSeconds: null, verb: questions[index].verb[0] };
@@ -917,10 +913,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   const quiz = document.getElementById('quiz');
   const arena = document.getElementById('boid-arena');
   const timer = document.getElementById('timer');
-  const modeSelect = document.getElementById('enemy-timing-mode');
-  const intervalInput = document.getElementById('enemy-interval');
-  const intervalValue = document.getElementById('enemy-interval-value');
-  const intervalSetting = document.getElementById('enemy-interval-setting');
+  const delaySelect = document.getElementById('enemy-delay');
   const waveSizeSelect = document.getElementById('enemy-wave-size');
   const enemyLimitSelect = document.getElementById('enemy-limit');
   if (!quiz || !arena || !timer) return;
@@ -929,17 +922,13 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   const norm=(x,y)=>{const d=Math.hypot(x,y)||1;return{x:x/d,y:y/d};};
   const TAU=Math.PI*2, HIT_R=12, PLAYER_COLOR='#28f3d1', ENEMY_COLOR='#ff4b65';
   let canvas,ctx,W=0,H=0,dpr=1,raf=0,last=0,boids=[],roundOn=false,nextWaveAt=0,collisions=0;
-  let clockMode='fixed',intervalSeconds=4,waveSize=10,maxEnemyBoids=40;
+  let delaySeconds=4,waveSize=10,maxEnemyBoids=40;
   function readSettings(){
-    clockMode=modeSelect.value;
-    intervalSeconds=Number(intervalInput.value)||4;
+    delaySeconds=Number(delaySelect.value)||4;
     waveSize=Number(waveSizeSelect.value)||10;
     maxEnemyBoids=Number(enemyLimitSelect.value)||40;
-    intervalSetting.hidden=clockMode!=='fixed';
-    intervalValue.textContent=intervalSeconds+' s';
   }
-  modeSelect.addEventListener('change',readSettings);
-  intervalInput.addEventListener('input',readSettings);
+  delaySelect.addEventListener('change',readSettings);
   waveSizeSelect.addEventListener('change',readSettings);
   enemyLimitSelect.addEventListener('change',readSettings);
   readSettings();
@@ -952,10 +941,10 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
   function createBoid(team,x,y,vx,vy){return{x,y,vx,vy,team,hp:3,hitAt:0};}
-  function releasePlayerSalvo(){
+  function releasePlayerSalvo(count){
     if(!W||!H)resize();
-    // Ten player boids are released together after every correct answer.
-    for(let i=0;i<10;i++){
+    // Each correct answer releases boids equal to its question number: Q1 gives 1, Q10 gives 10.
+    for(let i=0;i<count;i++){
       const x=W*.5+rnd(-22,22),y=H*.79+rnd(-12,12),a=rnd(-Math.PI*.82,-Math.PI*.18),s=rnd(1.4,2.2);
       boids.push(createBoid(0,x,y,Math.cos(a)*s,Math.sin(a)*s));
     }
@@ -972,19 +961,16 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     }
   }
   function reset(){
-    boids=[];collisions=0;roundOn=true;readSettings();
-    nextWaveAt=clockMode==='after-answer'?Infinity:performance.now()+(clockMode==='adaptive'?4000:intervalSeconds*1000);
+    boids=[];collisions=0;roundOn=true;readSettings();nextWaveAt=Infinity;
   }
-  function onAnswer(seconds){
-    if(!roundOn)return;
-    if(clockMode==='after-answer')nextWaveAt=performance.now()+1000;
-    else if(clockMode==='adaptive')nextWaveAt=performance.now()+clamp(seconds*1000,1000,7000);
+  function questionStarted(){
+    if(roundOn)nextWaveAt=performance.now()+delaySeconds*1000;
   }
   function updateClock(now){
     if(!roundOn||quiz.hidden||!Number.isFinite(nextWaveAt))return;
     if(now>=nextWaveAt){
       spawnEnemyWave();
-      nextWaveAt=clockMode==='fixed'?now+intervalSeconds*1000:Infinity;
+      nextWaveAt=Infinity;
     }
   }
   function tick(now){
@@ -1043,7 +1029,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     }
   }
   window.addEventListener('resize',resize);
-  window.ansonBoids={reset,releasePlayerSalvo,onAnswer,stats:()=>({boids:boids.length,collisions,players:boids.filter(b=>b.team===0).length,enemies:boids.filter(b=>b.team===1).length})};
+  window.ansonBoids={reset,questionStarted,releasePlayerSalvo,stats:()=>({boids:boids.length,collisions,players:boids.filter(b=>b.team===0).length,enemies:boids.filter(b=>b.team===1).length})};
   resize();raf=requestAnimationFrame(tick);
 })();
 
