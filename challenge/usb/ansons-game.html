@@ -674,10 +674,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   }
   function setChoiceCount(count) {
     selectedChoiceCount = Math.max(3, Math.min(8, count));
-    document.querySelectorAll('[data-game-type]').forEach(function (button) {
-    button.addEventListener('click', function () { setGameType(button.dataset.gameType); });
-  });
-  document.querySelectorAll('[data-choice-count]').forEach(function (button) {
+    document.querySelectorAll('[data-choice-count]').forEach(function (button) {
       const selected = Number(button.dataset.choiceCount) === selectedChoiceCount;
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', selected ? 'true' : 'false');
@@ -925,6 +922,9 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   });
   document.querySelectorAll('[data-count]').forEach(function (button) {
     if(button.dataset.count)button.addEventListener('click', function () { setPlayerCount(Number(button.dataset.count)); });
+  });
+  document.querySelectorAll('[data-game-type]').forEach(function (button) {
+    button.addEventListener('click', function () { setGameType(button.dataset.gameType); });
   });
   document.querySelectorAll('[data-choice-count]').forEach(function (button) {
     button.addEventListener('click', function () { setChoiceCount(Number(button.dataset.choiceCount)); });
