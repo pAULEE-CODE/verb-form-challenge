@@ -49,6 +49,8 @@ h2 { margin: 0; font-size: clamp(1.3rem, 4vw, 1.8rem); }
 .question-prompt { margin: 25px 0 13px; color: var(--muted); font-size: 1rem; font-weight: 600; }
 .word-pattern { min-height: 91px; display: flex; align-items: center; justify-content: center; gap: clamp(10px, 4vw, 24px); margin: 0 0 24px; padding: 20px 12px; border-radius: 16px; background: rgba(7,19,28,.45); border: 1px solid rgba(77,112,134,.38); font-size: clamp(1.8rem, 7vw, 2.7rem); font-weight: 850; letter-spacing: -.025em; }
 .word-pattern .blank { color: var(--cyan); letter-spacing: .08em; }
+.word-pattern.sentence-pattern { display:block; min-height:100px; padding:22px clamp(14px,3vw,34px); text-align:center; font-size:clamp(1.1rem,2.7vw,2rem); line-height:1.45; letter-spacing:0; overflow-wrap:anywhere; }
+.word-pattern.sentence-pattern .blank { white-space:nowrap; }
 .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .choice { min-height: 61px; padding: 12px; border: 1px solid #3a5b70; border-radius: 13px; color: var(--text); background: var(--panel-light); cursor: pointer; font-size: clamp(1.12rem, 4vw, 1.42rem); font-weight: 800; transition: background .12s ease, transform .12s ease, border-color .12s ease; }
 .choice:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--cyan); background: #24475a; }
@@ -197,10 +199,10 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
         <span class="game-type-label">Game type</span>
         <div class="game-type-selector" role="group" aria-label="Choose game type">
           <button class="game-type-button selected" data-game-type="verbs" type="button" aria-pressed="true">Verbs</button>
-          <button class="game-type-button" data-game-type="choice2" type="button" aria-pressed="false">Choice 2</button>
+          <button class="game-type-button" data-game-type="choice2" type="button" aria-pressed="false">Choice 2 · Sentences</button>
           <button class="game-type-button" data-game-type="choice3" type="button" aria-pressed="false">Choice 3</button>
         </div>
-        <p id="game-type-note" class="choice-count-description">Verbs is ready to play. Choice 2 and Choice 3 are placeholders for future game types.</p>
+        <p id="game-type-note" class="choice-count-description">Verbs is ready to play. Choice 2 mixes easy passive voice and present perfect sentences; Choice 3 is a placeholder.</p>
       </div>
       <div id="player-count-row" class="player-count-row" hidden>
         <span>Players</span>
@@ -584,6 +586,8 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     start: document.getElementById('start-button'),
     restart: document.getElementById('restart-button'),
     questionCount: document.getElementById('question-count'),
+    questionTitle: document.getElementById('question-title'),
+    gameTypeNote: document.getElementById('game-type-note'),
     score: document.getElementById('score'),
     progress: document.getElementById('progress-fill'),
     timer: document.getElementById('timer'),
@@ -618,6 +622,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   let transitionTimeout = null;
   let active = false;
   let soloRecords = [];
+  let sentenceHistory = new Set();
   let players = [];
   let answeredThisQuestion = [];
 
@@ -635,9 +640,76 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     clearTimeout(transitionTimeout);
   }
   const CHOICE_LEVEL_NAMES = {3:'Warm-up',4:'Easy',5:'Steady',6:'Tricky',7:'Hard',8:'Expert'};
+  const SENTENCE_BANK = [
+    {sentence:'The cake was ___ by Mom.', answer:'eaten', kind:'passive'},
+    {sentence:'The ball was ___ into the yard.', answer:'thrown', kind:'passive'},
+    {sentence:'The glass was ___ on the floor.', answer:'broken', kind:'passive'},
+    {sentence:'The picture was ___ by Mia.', answer:'drawn', kind:'passive'},
+    {sentence:'The letter was ___ by Sam.', answer:'written', kind:'passive'},
+    {sentence:'The song was ___ by the children.', answer:'sung', kind:'passive'},
+    {sentence:'The door was ___ at night.', answer:'shut', kind:'passive'},
+    {sentence:'The lunch was ___ for the picnic.', answer:'made', kind:'passive'},
+    {sentence:'The lost toy was ___ under the bed.', answer:'found', kind:'passive'},
+    {sentence:'The car was ___ to school.', answer:'driven', kind:'passive'},
+    {sentence:'The fish was ___ in the pond.', answer:'caught', kind:'passive'},
+    {sentence:'The gift was ___ to Lily.', answer:'given', kind:'passive'},
+    {sentence:'The bike was ___ to the park.', answer:'taken', kind:'passive'},
+    {sentence:'The red shirt was ___ on Monday.', answer:'worn', kind:'passive'},
+    {sentence:'The story was ___ aloud.', answer:'read', kind:'passive'},
+    {sentence:'The floor was ___ after lunch.', answer:'swept', kind:'passive'},
+    {sentence:'The baby was ___ by Dad.', answer:'held', kind:'passive'},
+    {sentence:'The blocks were ___ into a tower.', answer:'built', kind:'passive'},
+    {sentence:'The dog was ___ before bed.', answer:'fed', kind:'passive'},
+    {sentence:'The song was ___ on the radio.', answer:'heard', kind:'passive'},
+    {sentence:'The ball was ___ by the bat.', answer:'hit', kind:'passive'},
+    {sentence:'The new toy was ___ at the shop.', answer:'bought', kind:'passive'},
+    {sentence:'The kite was ___ up high.', answer:'flown', kind:'passive'},
+    {sentence:'The bunny was ___ in the box.', answer:'hidden', kind:'passive'},
+    {sentence:'The picture was ___ by everyone.', answer:'seen', kind:'passive'},
+    {sentence:'The box was ___ to Grandma.', answer:'brought', kind:'passive'},
+    {sentence:'The cup was ___ on the table.', answer:'put', kind:'passive'},
+    {sentence:'The chair was ___ near the window.', answer:'set', kind:'passive'},
+    {sentence:'The paper was ___ into a boat.', answer:'cut', kind:'passive'},
+    {sentence:'The books were ___ on the shelf.', answer:'laid', kind:'passive'},
+    {sentence:'I have ___ my lunch.', answer:'eaten', kind:'perfect'},
+    {sentence:'She has ___ her name.', answer:'written', kind:'perfect'},
+    {sentence:'We have ___ the moon.', answer:'seen', kind:'perfect'},
+    {sentence:'He has ___ a toy.', answer:'made', kind:'perfect'},
+    {sentence:'They have ___ home.', answer:'gone', kind:'perfect'},
+    {sentence:'The dog has ___ fast.', answer:'run', kind:'perfect'},
+    {sentence:'I have ___ a bath.', answer:'taken', kind:'perfect'},
+    {sentence:'We have ___ a cake.', answer:'made', kind:'perfect'},
+    {sentence:'She has ___ a cat.', answer:'drawn', kind:'perfect'},
+    {sentence:'He has ___ the ball.', answer:'caught', kind:'perfect'},
+    {sentence:'I have ___ my milk.', answer:'drunk', kind:'perfect'},
+    {sentence:'We have ___ a song.', answer:'sung', kind:'perfect'},
+    {sentence:'The baby has ___ well.', answer:'slept', kind:'perfect'},
+    {sentence:'Dad has ___ the car.', answer:'driven', kind:'perfect'},
+    {sentence:'Mom has ___ apples.', answer:'bought', kind:'perfect'},
+    {sentence:'The bird has ___ away.', answer:'flown', kind:'perfect'},
+    {sentence:'I have ___ my shoe.', answer:'found', kind:'perfect'},
+    {sentence:'She has ___ me a book.', answer:'given', kind:'perfect'},
+    {sentence:'They have ___ a tower.', answer:'built', kind:'perfect'},
+    {sentence:'The cat has ___ behind the chair.', answer:'hidden', kind:'perfect'},
+    {sentence:'We have ___ this book.', answer:'read', kind:'perfect'},
+    {sentence:'He has ___ his bike.', answer:'ridden', kind:'perfect'},
+    {sentence:'I have ___ my bag.', answer:'forgotten', kind:'perfect'},
+    {sentence:'She has ___ a doll.', answer:'chosen', kind:'perfect'},
+    {sentence:'We have ___ a plant.', answer:'grown', kind:'perfect'},
+    {sentence:'The glass has ___ down.', answer:'fallen', kind:'perfect'},
+    {sentence:'The bus has ___ to school.', answer:'come', kind:'perfect'},
+    {sentence:'I have ___ the paper.', answer:'cut', kind:'perfect'},
+    {sentence:'She has ___ on her shoes.', answer:'put', kind:'perfect'},
+    {sentence:'We have ___ our friends.', answer:'met', kind:'perfect'},
+    {sentence:'We have ___ our work.', answer:'done', kind:'perfect'}
+  ];
   function updateRoundNote() {
-    if (selectedGameType !== 'verbs') {
-      ui.roundNote.textContent = selectedGameType === 'choice2' ? 'Choice 2 is a placeholder. Verbs is the playable game type for now.' : 'Choice 3 is a placeholder. Verbs is the playable game type for now.';
+    if (selectedGameType === 'choice3') {
+      ui.roundNote.textContent = 'Choice 3 is a placeholder. Choose Verbs or Sentences to play.';
+      return;
+    }
+    if (selectedGameType === 'choice2') {
+      ui.roundNote.textContent = '10 easy passive voice and present perfect sentences · ' + selectedChoiceCount + ' choices · Works offline';
       return;
     }
     ui.roundNote.textContent = mode === 'solo'
@@ -651,8 +723,13 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       button.classList.toggle('selected', selected);
       button.setAttribute('aria-pressed', selected ? 'true' : 'false');
     });
-    ui.start.disabled = type !== 'verbs';
-    ui.start.textContent = type === 'verbs' ? "Start Anson's Game" : type === 'choice2' ? 'Choice 2 is not ready yet' : 'Choice 3 is not ready yet';
+    ui.start.disabled = type === 'choice3';
+    ui.start.textContent = type === 'verbs' ? "Start Anson's Game" : type === 'choice2' ? 'Start Sentence Game' : 'Choice 3 is not ready yet';
+    ui.gameTypeNote.textContent = type === 'verbs'
+      ? 'Verbs is ready to play. Choice 2 is the easy sentence game; Choice 3 is a placeholder.'
+      : type === 'choice2'
+        ? 'Choice 2 mixes simple passive voice and present perfect sentences.'
+        : 'Choice 3 is a placeholder for a future game type.';
     updateRoundNote();
   }
   function setMode(nextMode) {
@@ -682,12 +759,43 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     ui.choiceCountDescription.textContent = selectedChoiceCount + ' choices · ' + CHOICE_LEVEL_NAMES[selectedChoiceCount];
     updateRoundNote();
   }
+  function shuffleLocal(items) {
+    const copy = items.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+  function createSentenceSession(questionCount, choiceCount) {
+    let available = SENTENCE_BANK.filter(function (item) { return !sentenceHistory.has(item.sentence); });
+    if (available.length < questionCount) {
+      sentenceHistory.clear();
+      available = SENTENCE_BANK.slice();
+    }
+    const passive = shuffleLocal(available.filter(function (item) { return item.kind === 'passive'; })).slice(0, Math.ceil(questionCount / 2));
+    const perfect = shuffleLocal(available.filter(function (item) { return item.kind === 'perfect'; })).slice(0, Math.floor(questionCount / 2));
+    const selected = shuffleLocal(passive.concat(perfect));
+    selected.forEach(function (item) { sentenceHistory.add(item.sentence); });
+    const participles = Array.from(new Set(bank.map(function (verb) { return verb[2]; })));
+    return selected.map(function (item) {
+      const distractors = shuffleLocal(participles.filter(function (word) { return word !== item.answer; })).slice(0, choiceCount - 1);
+      return Object.freeze({
+        sentence: item.sentence,
+        kind: item.kind,
+        answer: item.answer,
+        choices: Object.freeze(shuffleLocal([item.answer].concat(distractors)))
+      });
+    });
+  }
   function start() {
-    if (selectedGameType !== 'verbs') return;
+    if (selectedGameType === 'choice3') return;
     clearTimers();
-    const questionCount = mode === 'challenge' ? 8 + Math.floor(Math.random() * 5) : SOLO_QUESTION_COUNT;
+    const questionCount = SOLO_QUESTION_COUNT;
     const effectiveChoiceCount = selectedChoiceCount;
-    questions = VerbQuizCore.createSession(bank, SpellingRules, questionCount, undefined, effectiveChoiceCount);
+    questions = selectedGameType === 'choice2'
+      ? createSentenceSession(questionCount, effectiveChoiceCount)
+      : VerbQuizCore.createSession(bank, SpellingRules, questionCount, undefined, effectiveChoiceCount);
     index = 0;
     correctCount = 0;
     soloRecords = [];
@@ -707,6 +815,19 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       if (partIndex === 2) span.className = 'blank';
       ui.pattern.appendChild(span);
     });
+  }
+  function setSentencePattern(question) {
+    ui.pattern.classList.add('sentence-pattern');
+    clearChildren(ui.pattern);
+    const parts = question.sentence.split('___');
+    const before = document.createElement('span');
+    before.textContent = parts[0];
+    const blank = document.createElement('span');
+    blank.className = 'blank';
+    blank.textContent = '______';
+    const after = document.createElement('span');
+    after.textContent = parts[1] || '';
+    ui.pattern.append(before, blank, after);
   }
   function startClock() {
     ui.timer.textContent = '0.0';
@@ -731,7 +852,13 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       : 'Question ' + (index + 1) + ' of ' + questions.length;
     ui.score.textContent = mode === 'solo' ? 'Correct: ' + correctCount : 'Challenge · first correct answer scores';
     ui.progress.style.width = ((index / questions.length) * 100) + '%';
-    setWordPattern(question);
+    if (selectedGameType === 'choice2') {
+      ui.questionTitle.textContent = 'Listen to the sentence, then choose the missing word:';
+      setSentencePattern(question);
+    } else {
+      ui.questionTitle.textContent = 'Listen to the question, then choose the missing word:';
+      setWordPattern(question);
+    }
     clearChildren(ui.choices);
     ui.choices.className = mode === 'solo' ? 'choices' : 'choices challenge-grid players-' + players.length;
     ui.feedback.textContent = '';
@@ -790,7 +917,9 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     active = false;
     clearInterval(timerInterval);
     const elapsed = (performance.now() - startedAt) / 1000;
-    const correct = choice === questions[index].answer;
+    const currentQuestion = questions[index];
+    const correct = choice === currentQuestion.answer;
+    const itemLabel = currentQuestion.verb ? currentQuestion.verb[0] : currentQuestion.sentence.replace('___', currentQuestion.answer);
     Array.from(ui.choices.children).forEach(function (button) {
       button.disabled = true;
       if (button.textContent === questions[index].answer) button.classList.add('correct');
@@ -798,13 +927,13 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     if (correct) {
       correctCount += 1;
       if (window.ansonBoids) window.ansonBoids.releasePlayerSalvo(boidsForCurrentQuestion());
-      soloRecords[index] = { correct: true, answerTimeSeconds: elapsed, verb: questions[index].verb[0] };
+      soloRecords[index] = { correct: true, answerTimeSeconds: elapsed, itemLabel: itemLabel };
       clickedButton.classList.add('correct');
       const reward = boidsForCurrentQuestion();
       ui.feedback.textContent = 'Correct! +' + reward + ' ' + (reward === 1 ? 'boid' : 'boids') + '. ' + formatTime(elapsed) + ' recorded.';
       ui.feedback.classList.add('good');
     } else {
-      soloRecords[index] = { correct: false, answerTimeSeconds: null, verb: questions[index].verb[0] };
+      soloRecords[index] = { correct: false, answerTimeSeconds: null, itemLabel: itemLabel };
       clickedButton.classList.add('incorrect');
       ui.feedback.textContent = 'Not quite. The correct form is “' + questions[index].answer + '”.';
       ui.feedback.classList.add('bad');
@@ -865,7 +994,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
     clearTimers();
     active = false;
     show('results');
-    ui.restart.textContent = "Play Anson's Game again";
+    ui.restart.textContent = 'New game · choose type';
     ui.progress.style.width = '100%';
     clearChildren(ui.timeResults);
     if (mode === 'solo') finishSolo();
@@ -877,7 +1006,7 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
       const row = document.createElement('div');
       row.className = 'time-row';
       const label = document.createElement('span');
-      label.textContent = 'Question ' + (i + 1) + ' · ' + record.verb;
+      label.textContent = 'Question ' + (i + 1) + ' · ' + (record.itemLabel || record.verb || 'verb');
       const value = document.createElement('strong');
       value.textContent = record.correct ? formatTime(record.answerTimeSeconds) : 'No time saved';
       row.append(label, value);
@@ -931,7 +1060,8 @@ footer { color: #7791a3; text-align: center; font-size: .78rem; padding: 18px 8p
   });
   ui.start.addEventListener('click', start);
   ui.restart.addEventListener('click', function () {
-    start();
+    clearTimers();
+    show('welcome');
   });
 })();
 
