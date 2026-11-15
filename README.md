@@ -19,7 +19,7 @@ The start screen offers Verbs, Story Time, and General Questions. Story Time is 
 
 
 
-The separate [3D cube experiment](challenge/usb/ansons-game-3d.html) uses the same arena footprint, with player and enemy boids swimming, steering, and colliding in a cubic volume. It preserves the original Anson's Game file for comparison. [Open the 3D build on GitHub Pages](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d.html) or [download the standalone HTML](https://raw.githubusercontent.com/pAULEE-CODE/verb-form-challenge/main/challenge/usb/ansons-game-3d.html).
+The [original 3D cube build](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d.html) remains available for comparison. The new [wide-tank build](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d-wide-tank.html) keeps the arena footprint, makes the tank four times wider, slightly taller, and shallower, and draws the fish modestly smaller. [Download the wide-tank HTML for USB](https://raw.githubusercontent.com/pAULEE-CODE/verb-form-challenge/main/challenge/usb/ansons-game-3d-wide-tank.html).
 
 ## USB testing
 
