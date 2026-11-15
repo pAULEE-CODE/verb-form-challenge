@@ -17,6 +17,10 @@ The separate [Anson's Game standalone build](challenge/usb/ansons-game.html) is 
 
 The start screen offers Verbs, Story Time, and General Questions. Story Time is playable offline with six simple stories of 10 missing-word sentences each; a story is not repeated until all six have been used. Its answer choices are spelling-mistake varieties of the target past participle, generated with the same rules as the Verbs game. General Questions has 51 simple offline missing-word questions and uses real-word choices without spelling mistakes. The New game button returns to setup to choose the type and settings again. Enemy waves enter from the far side; boids have three hit points and bounce apart when they collide. For USB testing, open the file page on GitHub and choose **Download raw file**. For a browser preview, use [Anson's Game on GitHub Pages](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game.html) after Pages has published the latest commit.
 
+
+
+The separate [3D cube experiment](challenge/usb/ansons-game-3d.html) uses the same arena footprint, with player and enemy boids swimming, steering, and colliding in a cubic volume. It preserves the original Anson's Game file for comparison. [Open the 3D build on GitHub Pages](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d.html) or [download the standalone HTML](https://raw.githubusercontent.com/pAULEE-CODE/verb-form-challenge/main/challenge/usb/ansons-game-3d.html).
+
 ## USB testing
 
 For the current answer-choice test, use [the experimental standalone build](challenge/usb/verb-challenge-choice-test.html). It supports 2–4 players, 3–8 choices (default 3), and hidden random rounds of 8–12 questions. Open its file page on GitHub and choose **Download raw file**, then copy the HTML file to the USB drive.
