@@ -19,7 +19,7 @@ The start screen offers Verbs, Story Time, and General Questions. Story Time is 
 
 
 
-The [original 3D cube build](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d.html) and [wide-tank fish experiment](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d-wide-tank.html) remain available for comparison. The latest [3D boid-tank build](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d-boid-tank.html) restores the familiar dart-shaped boids, adds near-full 3D water and tiny rising bubbles, and expands the offline content to 18 ten-sentence stories and 175 general questions. [Download the boid-tank HTML for USB](https://raw.githubusercontent.com/pAULEE-CODE/verb-form-challenge/main/challenge/usb/ansons-game-3d-boid-tank.html).
+The [original 3D cube build](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d.html) and [wide-tank fish experiment](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d-wide-tank.html) remain available for comparison. The [3D boid-tank build](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d-boid-tank.html) has the familiar dart-shaped boids, near-full water and tiny rising bubbles. The latest [expanded boid-tank build](https://paulee-code.github.io/verb-form-challenge/challenge/usb/ansons-game-3d-boid-tank-expanded.html) adds 20 stories (38 total, each with 10 sentences) and 200 general questions (375 total). [Download the expanded HTML for USB](https://raw.githubusercontent.com/pAULEE-CODE/verb-form-challenge/main/challenge/usb/ansons-game-3d-boid-tank-expanded.html).
 
 ## USB testing
 
