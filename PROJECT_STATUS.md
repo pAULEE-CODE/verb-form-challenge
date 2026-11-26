@@ -1,6 +1,6 @@
 # Project handover
 
-**Last updated:** 15 November 2026  
+**Last updated:** 27 November 2026  
 **Purpose:** Quickly restore context after a break. Read this and [BUILD_MODES.md](BUILD_MODES.md) before making project changes.
 
 ## Why this project exists
@@ -26,7 +26,8 @@ Repository: [pAULEE-CODE/verb-form-challenge](https://github.com/pAULEE-CODE/ver
 | Anson's Game (experimental) | `challenge/usb/ansons-game.html` | Verbs, 10-sentence Story Time stories, and general questions; persistent timed enemy waves and three-hit boid battles. |
 | Anson's Game 3D (experimental) | `challenge/usb/ansons-game-3d.html` | Original one-file cube experiment, retained for comparison. |
 | Anson's Game 3D wide tank (experimental) | `challenge/usb/ansons-game-3d-wide-tank.html` | Preserved wide-tank version with small fish-shaped swimmers. |
-| Anson's Game 3D boid tank (current experiment) | `challenge/usb/ansons-game-3d-boid-tank.html` | Wide shallow tank with the original dart-shaped boids, near-full 3D water, and tiny bubbles; expanded offline story and general-question pools. |
+| Anson's Game 3D boid tank | `challenge/usb/ansons-game-3d-boid-tank.html` | Wide shallow tank with dart-shaped boids, near-full 3D water, and tiny bubbles. |
+| Anson's Game expanded 3D boid tank (current) | `challenge/usb/ansons-game-3d-boid-tank-expanded.html` | Same tank game with 20 added stories and 200 added general questions. |
 
 Online single-player scores are handled separately by the Google Apps Script source in `apps-script/`, with results stored in Google Sheets. GitHub Pages hosts static HTML; it does not run the Apps Script backend.
 
@@ -38,7 +39,7 @@ The standalone build at `challenge/usb/ansons-game-3d.html` is an experimental a
 
 The saved build uses a large elapsed answer timer; the enemy arrival countdown is hidden. Each question keeps its own enemy wave scheduled from when it appears, so moving to the next question does not cancel earlier waves. The delay is 4–6 seconds for Verbs (default 4) and 4–9 seconds for Story Time and General Questions (default 6). Both the player's correct-answer salvo and that question's enemy wave use `question number + (answer choices − 3)`. The adult can set an enemy cap from 10 to 100 (default 40). Active enemy count is also balanced to Anson's flock, so it stays at 10 or fewer until he has more than 10 active boids; waves that do not fit are skipped. The enlarged boid arena sits below the question and answer controls. A correct answer immediately releases the player's salvo; enemy boids have three hit points and opposing collisions knock them apart.
 
-The current 3D boid-tank build has 18 simple offline stories with 10 missing-word sentences each (180 sentences total). A round plays one complete story, and stories do not repeat until all 18 have been used. Its choices are spelling-mistake varieties of the target past participle, using the same spelling rules as Verbs. General Questions has 175 simple offline questions in the same missing-word format; its choices are real words, not spelling mistakes. The latest 3D boid-tank build returns to the initial setup screen after New game, where all three game types and settings can be chosen. It also returns to the classic dart-shaped boids with three visible health pips. The water fills about 91% of the tank, leaving a clear air gap at the top; 34 small bubbles rise through it.
+The latest expanded build has 38 simple offline stories with 10 missing-word sentences each (380 sentences total). A round plays one complete story, and stories do not repeat until all 38 have been used. Its choices are spelling-mistake varieties of the target past participle, using the same spelling rules as Verbs. General Questions has 375 simple offline questions in the same missing-word format; its choices are real words, not spelling mistakes. The expanded 3D boid-tank build returns to the initial setup screen after New game, where all three game types and settings can be chosen. It also returns to the classic dart-shaped boids with three visible health pips. The water fills about 91% of the tank, leaving a clear air gap at the top; 34 small bubbles rise through it.
 
 ## Decisions to preserve
 
